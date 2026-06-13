@@ -72,6 +72,35 @@ a { color: inherit; text-decoration: none; }
 .pill-date { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
 .pill.ok { background: var(--good-soft); color: var(--good); }
 .pill.off { background: var(--bad-soft); color: var(--bad); }
+.pill-on { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.pill-off { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.pill-btn { cursor: pointer; user-select: none; }
+.pill-btn:hover { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+
+/* LLM 配置弹窗 */
+.llm-dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0;
+  max-width: 560px; width: 92vw; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+.llm-dialog::backdrop { background: rgba(15, 23, 42, .35); }
+.llm-dialog form { padding: 22px 24px 18px; }
+.llm-dialog h3 { margin: 0 0 6px; font-size: 18px; }
+.llm-dialog .muted.small { color: var(--muted); font-size: 12px; }
+.llm-dialog label { display: block; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.llm-dialog input, .llm-dialog select { width: 100%; box-sizing: border-box; margin-top: 4px;
+  padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px;
+  font: inherit; background: #fff; color: inherit; }
+.llm-dialog input:focus, .llm-dialog select:focus { border-color: var(--brand); outline: none; }
+.llm-presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0 4px; }
+.llm-presets .preset { font-size: 12px; padding: 5px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--muted); cursor: pointer; }
+.llm-presets .preset:hover { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+.llm-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.llm-actions button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: #fff; cursor: pointer; font: inherit; }
+.llm-actions button:hover { background: var(--panel); }
+.llm-actions button.primary { background: var(--brand); color: #fff; border-color: transparent; }
+.llm-actions button.primary:hover { background: var(--brand); filter: brightness(1.05); }
+.llm-actions button:disabled { opacity: .6; cursor: default; }
+#llm-status { margin-top: 10px; min-height: 16px; }
 
 .error-banner { background: var(--bad-soft); color: var(--bad); border: 1px solid #f3c9c2;
   padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; }

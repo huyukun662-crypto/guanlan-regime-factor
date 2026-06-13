@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import chat
 from . import refresh as refreshmod
+from . import llm_config as llmcfg
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS = ROOT / "outputs"
@@ -74,6 +75,15 @@ async def post_refresh(body: dict) -> JSONResponse:
         result = await run_in_threadpool(refreshmod.run_refresh, token)
         return JSONResponse(result)
     except Exception as ex:                 # noqa: BLE001 — report, don't 500 the UI
+        return JSONResponse({"ok": False, "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
+
+
+@app.post("/api/llm_config")
+async def post_llm_config(body: dict) -> JSONResponse:
+    """Update LLM provider/key/base_url/model in .env + live env. Never echo the key."""
+    try:
+        return JSONResponse(llmcfg.update_llm_config(body or {}))
+    except Exception as ex:                 # noqa: BLE001
         return JSONResponse({"ok": False, "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
 
 

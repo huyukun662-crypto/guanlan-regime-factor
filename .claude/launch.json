@@ -4,7 +4,7 @@
     {
       "name": "fof-dashboard",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "uvicorn", "server.app:app", "--host", "127.0.0.1"],
+      "runtimeArgs": ["-m", "uvicorn", "server.app:app", "--host", "127.0.0.1", "--port", "${PORT}"],
       "autoPort": true
     }
   ]
