@@ -63,6 +63,20 @@ Tushare Pro ──▶ fof/ (Python 包) ──▶ outputs/*.json ──▶ web/ 
 >
 > 旧的 FOF tooling（`fof-research-orchestrator` agent + `fof-builder` skill）已退役；ETF-sleeve 版 FOF 回测代码、`outputs/grid_search.csv`、`docs/before-after.md` 仍作研究证据链保留在 `fof/`，可 `FOFConfig` 复跑。
 
+### 怎么触发（说什么话）
+在 Claude Code 里**打开本仓库目录**后，直接用自然语言说出意图即可——Claude 把你的话**语义匹配**到各 `SKILL.md` 的 `description`（触发面），命中就自动加载执行。
+
+| 你说（中文 / English） | 触发 |
+|---|---|
+| 「更新风险评分」「现在什么市场状态」/ "read the current regime" | `regime-radar` → 0-100 风险分 + 顶/底 |
+| 「现在是走强还是走弱」「大势研判」「该进攻还是防御」/ "judge the regime" | `regime-verdict` → 走强/震荡/走弱 |
+| 「看因子」「因子轮动 IC」「哪个风格在风口」/ "factor board / rotation IC" | `factor-research` → 因子排行/IC/Sharpe |
+| 「该超配/低配哪些风格」「按大势和因子给配置建议」/ "factor allocation / tilt advice" | `factor-allocation` → 姿态 + 超配/低配 |
+| 「查研报」/ "find research on X" | `quant-research-retriever` → 带引用 |
+| **「跑一遍大势研判」「重建市场仪表板」/ "what's the market verdict"** | **agent `guanlan-analyst`** → 整条链路 + 末尾问「要打开仪表盘吗？」 |
+
+要点：① 是**语义**匹配，不必逐字照搬，意思相近即可；② 不确定就**直接点名**——「用 `factor-allocation` 给配置建议」；③ 也可**命令行直跑**脚本（见 [docs/usage.md](docs/usage.md) 方式③），不依赖触发。完整触发语对照与易混点见 **[docs/skills-triggers.md](docs/skills-triggers.md)**。
+
 ### 4 铁律（`fof/selection.py` + `fof/weights.py`）
 1. 30 日动量选（只买正在赚钱的）
 2. 15% 回撤拉黑 + 卡尔马门槛；过线 < 2 个 → 100% 货基
