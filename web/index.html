@@ -4,7 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>观澜 · 大势研判 + 因子看板</title>
-  <link rel="stylesheet" href="styles.css?v=20260613-topbar" />
+  <script>
+    // 主题切换：默认 Wind 暗色（金融终端观感），用户切换后写 localStorage。
+    (function () {
+      try {
+        const t = localStorage.getItem("guanlan-theme") || "wind";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "wind"); }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css?v=20260613-wind" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
@@ -49,6 +58,8 @@
           </div>
           <button id="llm-settings-btn" class="pill pill-btn"
                   type="button" title="配置 AI 顾问的 LLM 厂商与 API key">⚙ AI 配置</button>
+          <button id="theme-toggle" class="pill pill-btn" type="button"
+                  title="切换 Wind 暗色 / 浅色">🌙</button>
           <span id="health-pill" class="pill">连接中…</span>
           <span id="asof-pill" class="pill pill-date">—</span>
         </div>
@@ -295,5 +306,25 @@
   <script src="chat.js"></script>
   <script src="refresh.js"></script>
   <script src="llm_config.js?v=20260613"></script>
+  <script>
+    // theme toggle button → 翻 Wind ↔ Light，并记 localStorage
+    (function () {
+      const btn = document.getElementById("theme-toggle");
+      if (!btn) return;
+      const sync = () => {
+        const t = document.documentElement.getAttribute("data-theme") || "wind";
+        btn.textContent = t === "wind" ? "☀" : "🌙";
+        btn.title = t === "wind" ? "切到浅色" : "切到 Wind 暗色";
+      };
+      sync();
+      btn.addEventListener("click", () => {
+        const cur = document.documentElement.getAttribute("data-theme") || "wind";
+        const next = cur === "wind" ? "light" : "wind";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("guanlan-theme", next); } catch (e) {}
+        sync();
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -18,7 +18,62 @@
   --extreme: #e2503f;
   --shadow: 0 8px 30px rgba(31, 45, 66, 0.06);
   --radius: 14px;
+  --table-row-hover: rgba(47,109,246,.06);
   font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
+}
+
+/* Wind 风格 — 专业暗色（金融终端默认观感）。html[data-theme="wind"] 启用。 */
+[data-theme="wind"] {
+  --bg: #0a0f1c;
+  --panel: #131a2b;
+  --ink: #d8e0ee;
+  --muted: #7d8aa3;
+  --line: #1f2a3f;
+  --brand: #ffa524;                 /* Wind 橙 */
+  --brand-soft: #2c2010;
+  --good: #ef4444;                  /* A 股惯例：红涨 */
+  --good-soft: #2a1416;
+  --warn: #f5a524;
+  --bad: #10b981;                   /* A 股惯例：绿跌 */
+  --bad-soft: #102a22;
+  --low: #10b981;
+  --midlow: #4caf6e;
+  --midhigh: #ffa524;
+  --high: #ff7a33;
+  --extreme: #ef4444;
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
+  --radius: 8px;                    /* 终端样：方一些 */
+  --table-row-hover: rgba(255,165,36,.07);
+}
+[data-theme="wind"] body { background: var(--bg); color: var(--ink); }
+[data-theme="wind"] .card { background: var(--panel); border-color: var(--line); box-shadow: none; }
+[data-theme="wind"] .pill { background: rgba(255,255,255,.04); border-color: var(--line); color: var(--muted); }
+[data-theme="wind"] .pill-date { background: var(--brand-soft); color: var(--brand); }
+[data-theme="wind"] .pill-on { background: rgba(16,185,129,.12); color: #10b981; }
+[data-theme="wind"] .pill-off { background: rgba(239,68,68,.12); color: #ef4444; }
+[data-theme="wind"] .sidebar { background: linear-gradient(180deg,#0d1322,#0f172a); color: #c2cce0; }
+[data-theme="wind"] .brand-mark { color: var(--brand); }
+[data-theme="wind"] .nav-item { color: #9fadc7; }
+[data-theme="wind"] .nav-item:hover { background: rgba(255,165,36,.08); color: #fff; }
+[data-theme="wind"] .nav-item.active { background: var(--brand); color: #1a1100; }
+[data-theme="wind"] input, [data-theme="wind"] select, [data-theme="wind"] textarea {
+  background: #0d1322 !important; color: var(--ink) !important; border-color: var(--line) !important;
+}
+[data-theme="wind"] .llm-dialog { background: var(--panel); color: var(--ink); }
+[data-theme="wind"] .llm-actions button { background: #0d1322; color: var(--ink); border-color: var(--line); }
+[data-theme="wind"] .llm-actions button:hover { background: rgba(255,255,255,.05); }
+[data-theme="wind"] .llm-actions button.primary { background: var(--brand); color: #1a1100; }
+[data-theme="wind"] .llm-presets .preset { background: #0d1322; color: var(--muted); border-color: var(--line); }
+[data-theme="wind"] .llm-presets .preset:hover { background: var(--brand-soft); color: var(--brand); }
+[data-theme="wind"] th, [data-theme="wind"] td { border-color: var(--line) !important; }
+[data-theme="wind"] tr:hover td { background: var(--table-row-hover); }
+
+/* Tabular numerals — 让数字 / 表格列对齐如终端 */
+.gauge-score, .gauge-band, .master-score, .verdict, td, th,
+.pill-date, .factor-table, .factor-table td, .factor-table th,
+.master-axes, .master-segments, #ic-kpi, .card-title small {
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
 }
 
 * { box-sizing: border-box; }
