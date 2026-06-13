@@ -89,7 +89,6 @@ python .claude\skills\quant-research-retriever\scripts\query_vault.py "风险平
 | 只刷新某一块数据 | 命令行跑对应 `compute_*.py` |
 | 全量刷新 + 可视化 | `run_pipeline.py` → `uvicorn` → 开网页 |
 | 拿一份配置建议 | 对话 `现在该超配/低配哪些风格？` 或跑 `build_factor_allocation.py` |
-| 留参数证据 | `python scripts\grid_search.py` → `outputs\grid_search.csv` |
 
 ---
 
@@ -102,7 +101,6 @@ python .claude\skills\quant-research-retriever\scripts\query_vault.py "风险平
 | `factors.json` | factor-research / pipeline | 12 因子累积/排行/IC·ICIR/滚动Sharpe |
 | `factor_allocation.json` | factor-allocation | 姿态 + 超配/低配 + tilt 依据 + caveats |
 | `dashboard.json` | pipeline | 上面三块的打包快照（仪表板读它） |
-| `grid_search.csv` | grid_search.py | 参数网格证据（ETF-FOF 研究证据链）|
 
 ---
 

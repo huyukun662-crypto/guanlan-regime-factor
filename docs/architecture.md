@@ -103,8 +103,8 @@ Agent 的价值不在「会算」，而在**强制纪律**：
 2. **密钥安全**：`TUSHARE_TOKEN` / `ANTHROPIC_API_KEY` 只从 gitignored `.env` 读，绝不进日志/提交。
 3. **JSON 安全**：所有 `outputs/*.json` 经 `report._finite` 清洗 NaN/Inf → null（Starlette JSONResponse
    拒绝 NaN）。
-4. **诚实 / 证据链**：负结果（HMM 门控实测弱于 rule）、弱信号（因子动量）如实标注；ETF-FOF 回测代码
-   + `outputs/grid_search.csv` + `docs/before-after.md` 保留作研究证据，即使已不是主交付。
+4. **诚实交付**：弱信号（因子动量 IC≈0.04）如实标注；不构建组合、不回测、不出权重——交付是研究
+   建议与读法，非可上线策略。ETF-FOF 早期回测脚手架仅作历史代码参考留在 `fof/`，不在文档呈现。
 
 ---
 

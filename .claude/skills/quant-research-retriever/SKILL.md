@@ -17,7 +17,7 @@ recommendation carries a `vault/...` provenance trail.
 
 ## When to use
 - Before recommending any mechanism (regime gate, risk parity, RSRS, drawdown blacklist).
-- Building the rationale block of the agent's final summary or `docs/before-after.md`.
+- Building the rationale block of the agent's final research brief.
 
 ## When NOT to use
 - Not a data/compute tool — that's `regime-radar` / `regime-verdict` / `factor-research`. This skill only reads docs.
