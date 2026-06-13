@@ -44,8 +44,24 @@ def run_refresh(token: str = "") -> dict:
     from fof import data as datamod
 
     today = datetime.date.today().strftime("%Y-%m-%d")
-    # force-pull the latest trading day (bypass get_ohlcv's 5-day stale tolerance)
-    datamod.refresh_tail(sleeves.all_codes(), today)
+    # 1) ETF sleeves (regime + benchmark use these). bypass get_ohlcv 5-day stale tolerance.
+    n_etf = datamod.refresh_tail(sleeves.all_codes(), today)
+    # 2) Index codes used by master (HMM benchmark) and factors (12 factor indices + XSEC pool).
+    # index_close always hits Tushare and overwrites the parquet, so it implicitly refreshes.
+    from fof.config import FACTOR_DEFS, FACTOR_XSEC_POOL
+    indices = {DEFAULT_CONFIG.master_index, "000300.SH", "000001.SH"}
+    for _k, _d, long_c, short_c, _c in FACTOR_DEFS:
+        for code in (long_c, short_c):
+            if code and code != "XSEC":
+                indices.add(code)
+    for code in FACTOR_XSEC_POOL:
+        indices.add(code)
+    for code in indices:
+        try:
+            datamod.index_close(code, DEFAULT_CONFIG.start, today)
+        except Exception:                       # noqa: BLE001 — fall back to cache, don't fail refresh
+            pass
+
     cfg = replace(DEFAULT_CONFIG, asof=today)
     dash = report.run_all(cfg, write=True)
     # FOF 已从 run_all 移除，dash 只剩 regime/master/factors；before_after.md 不再随刷新重写
@@ -54,6 +70,10 @@ def run_refresh(token: str = "") -> dict:
     reg = dash["regime"]
     master = dash.get("master", {}) or {}
     factors = dash.get("factors", {}) or {}
+    # 「最新数据 asof」= 实际数据中最新一根 K 线的日期，取三者最大值（不是 cfg.asof 这个日历日）。
+    asof_dates = [d for d in [reg.get("asof"), master.get("asof"),
+                              (factors.get("ranking") or {}).get("asof")] if d]
+    data_asof = max(asof_dates) if asof_dates else today
     fac_alloc_path = ROOT / "outputs" / "factor_allocation.json"
     fac_alloc = {}
     if fac_alloc_path.exists():
@@ -63,9 +83,13 @@ def run_refresh(token: str = "") -> dict:
         except Exception:
             fac_alloc = {}
     return {
-        "ok": True, "asof": reg["asof"],
+        "ok": True,
+        "asof": data_asof,                     # actual latest data
+        "requested_asof": today,               # what we asked for
+        "n_etf_updated": int(n_etf),           # 0 on non-trading days / already-fresh
         "composite_score": reg["composite_score"], "band": reg["band"],
         "regime_label": reg["regime_label"], "equity_exposure": reg["equity_exposure"],
+        "regime_asof": reg.get("asof"), "master_asof": master.get("asof"),
         "verdict": master.get("verdict"), "master_score": master.get("master_score"),
         "n_factors": factors.get("n_factors"),
         "posture": fac_alloc.get("posture"),

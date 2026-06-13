@@ -29,9 +29,12 @@
       if (d.ok) {
         const verdict = d.verdict || d.regime_label || "—";
         const ow = (d.overweight && d.overweight.length) ? "·超配 " + d.overweight.join("/") : "";
-        showToast(`✓ 刷新成功 · ${d.asof} · 风险分 ${d.composite_score}(${d.band}) · `
+        // 「数据已更新到 X」用真实数据 asof（不是请求的日历日）；ETF 新拉到的天数也告诉用户
+        const fresh = (typeof d.n_etf_updated === "number")
+          ? (d.n_etf_updated > 0 ? `· ${d.n_etf_updated} 支 ETF 新增数据` : "· 已是最新（无新增）") : "";
+        showToast(`✓ 数据已更新到 ${d.asof} ${fresh} · 风险分 ${d.composite_score}(${d.band}) · `
           + `大势 ${verdict}${ow} · 即将刷新页面…`, "ok", 0);
-        setTimeout(() => location.reload(), 1400);
+        setTimeout(() => location.reload(), 1600);
       } else {
         showToast("✗ 刷新失败：" + (d.error || "未知错误"), "err", 9000);
         btn.disabled = false; btn.textContent = label;
