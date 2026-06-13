@@ -35,7 +35,7 @@
 
 ## 架构
 
-> 上手用法（装/配/跑/调 skill/常见问题）见 **[docs/usage.md](docs/usage.md)**；Agent + Skills 的分层逻辑、触发方式与编排工作流见 **[docs/architecture.md](docs/architecture.md)**。
+> 上手用法（装/配/跑/调 skill/常见问题）见 **[docs/usage.md](docs/usage.md)**；Agent + Skills 的分层逻辑见 **[docs/architecture.md](docs/architecture.md)**；**每个 skill 用什么话触发**见 **[docs/skills-triggers.md](docs/skills-triggers.md)**。
 
 ```
 Tushare Pro ──▶ fof/ (Python 包) ──▶ outputs/*.json ──▶ web/ 仪表盘
