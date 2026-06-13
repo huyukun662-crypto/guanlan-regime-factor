@@ -202,6 +202,50 @@ def refresh_tail(codes: list[str], end: str) -> int:
     return updated
 
 
+def index_refresh_tail(codes: list[str], end: str) -> int:
+    """Force-fetch the latest bars for each cached index parquet (`_idx_<code>.parquet`).
+
+    Like `refresh_tail` for ETFs but for stock indices (000300.SH, 000852.SH, 000985.CSI, …).
+    Only fetches [cache_last + 1 day .. end] from `pro.index_daily`, bypassing index_close's
+    full-history yearly fetcher — which made the dashboard refresh take 60-120s of API calls
+    even when only one new trading day was needed. Returns the number of indices that gained
+    new rows. Falls back silently on per-code failure (cache still serves stale).
+    """
+    pro = None
+    updated = 0
+    for code in codes:
+        path = CACHE / f"_idx_{code.replace('.', '_')}.parquet"
+        if not path.exists():        # no cache yet: defer to index_close on next read
+            continue
+        cached = pd.read_parquet(path)
+        cached.index = pd.to_datetime(cached.index)
+        fetch_start = (cached.index.max() + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+        if pd.Timestamp(fetch_start) > pd.Timestamp(end):
+            continue
+        if pro is None:
+            try:
+                pro = _pro()
+            except Exception:                      # noqa: BLE001 — no token, skip the lot
+                return updated
+        try:
+            raw = pro.index_daily(
+                ts_code=code,
+                start_date=fetch_start.replace("-", ""),
+                end_date=end.replace("-", ""))
+        except Exception:                          # noqa: BLE001
+            continue
+        if raw is None or raw.empty:
+            continue
+        raw["date"] = pd.to_datetime(raw["trade_date"], format="%Y%m%d")
+        fresh = raw.set_index("date")["close"].sort_index().to_frame("v")
+        merged = cached.combine_first(fresh).sort_index()
+        merged = merged[~merged.index.duplicated(keep="last")]
+        if len(merged) > len(cached):
+            merged.to_parquet(path)
+            updated += 1
+    return updated
+
+
 def close_panel(codes: list[str], start: str, end: str) -> pd.DataFrame:
     """Adjusted-close panel: DatetimeIndex rows, bare-code columns (outer-joined)."""
     data = get_ohlcv(codes, start, end)
@@ -419,22 +463,57 @@ def shibor_1w(start: str, end: str) -> pd.Series | None:
         return _cached_series(path)
 
 
+_INDEX_STALE_DAYS = 5      # 缓存最后日期距 end 在 5 个**日历日**内视为新鲜，直接读盘
+
+
 def index_close(code: str, start: str, end: str) -> pd.Series | None:
-    """Daily close of a stock index (e.g. 000001.SH 上证, 000905.SH 中证500)."""
+    """Daily close of a stock index (e.g. 000001.SH 上证, 000905.SH 中证500).
+
+    Cache-first: if the local parquet covers up to within ``_INDEX_STALE_DAYS`` of ``end``,
+    return the cached slice without hitting Tushare. Otherwise tail-fetch the missing rows
+    (incremental, ~1 API call) instead of re-downloading 6 years yearly (~6 API calls/index).
+    """
     path = CACHE / f"_idx_{code.replace('.', '_')}.parquet"
+    cached = _cached_series(path)
+    end_ts = pd.Timestamp(end)
+    if cached is not None and not cached.empty \
+            and (end_ts - cached.index.max()).days <= _INDEX_STALE_DAYS:
+        return cached.loc[cached.index >= pd.Timestamp(start)]
     try:
         pro = _pro()
+    except Exception as ex:                            # noqa: BLE001
+        logger.warning("tushare unavailable (%s) → cache %s", ex, code)
+        return cached
+    # Tail-only fetch when cache exists but lags by more than the stale window.
+    if cached is not None and not cached.empty:
+        try:
+            tail_start = (cached.index.max() + pd.Timedelta(days=1)).strftime("%Y%m%d")
+            raw = pro.index_daily(ts_code=code, start_date=tail_start,
+                                  end_date=end.replace("-", ""))
+            if raw is None or raw.empty:
+                return cached.loc[cached.index >= pd.Timestamp(start)]
+            raw["date"] = pd.to_datetime(raw["trade_date"], format="%Y%m%d")
+            tail = raw.set_index("date")["close"].sort_index()
+            merged = cached.combine_first(tail).sort_index()
+            merged = merged[~merged.index.duplicated(keep="last")]
+            merged.to_frame("v").to_parquet(path)
+            return merged.loc[merged.index >= pd.Timestamp(start)]
+        except Exception as ex:                        # noqa: BLE001
+            logger.warning("index_daily tail %s failed (%s) → cache", code, ex)
+            return cached.loc[cached.index >= pd.Timestamp(start)]
+    # Cold path (no cache): full yearly back-fill.
+    try:
         raw = _yearly(lambda s, e: pro.index_daily(ts_code=code, start_date=s, end_date=e),
                       start.replace("-", ""), end.replace("-", ""))
         if raw is None:
-            return _cached_series(path)
+            return cached
         raw["date"] = pd.to_datetime(raw["trade_date"], format="%Y%m%d")
         s = raw.set_index("date")["close"].sort_index()
         s.to_frame("v").to_parquet(path)
         return s
-    except Exception as ex:  # noqa: BLE001
+    except Exception as ex:                            # noqa: BLE001
         logger.warning("index_daily %s unavailable (%s)", code, ex)
-        return _cached_series(path)
+        return cached
 
 
 DERIV_LOOKBACK_DAYS = 300        # bound the heavy per-date deriv fetch to a recent window
