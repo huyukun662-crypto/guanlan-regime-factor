@@ -1,14 +1,14 @@
 {
-  "asof": "2026-06-11",
+  "asof": "2026-06-12",
   "verdict": "震荡",
-  "master_score": 48.8,
-  "confidence": 53.0,
+  "master_score": 49.8,
+  "confidence": 55.0,
   "posture": "中性",
   "equity_hint": "中（半仓 / 择优）",
   "tilt_mode": "动量（追涨：上月领涨风格倾向延续）",
   "tilt_basis": {
     "ic_mean": 0.042,
-    "icir": 0.089,
+    "icir": 0.088,
     "hit_rate": 0.545
   },
   "overweight": [
@@ -16,22 +16,22 @@
       "key": "reversal",
       "display": "反转",
       "category": "反转",
-      "r_1m": 0.0477,
-      "r_3m": -0.0367
+      "r_1m": 0.0295,
+      "r_3m": -0.0483
     },
     {
       "key": "lowvol",
       "display": "低波",
       "category": "低波",
-      "r_1m": 0.0367,
-      "r_3m": -0.0443
+      "r_1m": 0.0191,
+      "r_3m": -0.0511
     },
     {
       "key": "dividend",
       "display": "红利",
       "category": "红利",
-      "r_1m": 0.0227,
-      "r_3m": -0.0586
+      "r_1m": 0.0184,
+      "r_3m": -0.0632
     }
   ],
   "underweight": [
@@ -39,22 +39,22 @@
       "key": "quality",
       "display": "质量",
       "category": "质量",
-      "r_1m": -0.0837,
-      "r_3m": -0.1512
+      "r_1m": -0.0959,
+      "r_3m": -0.1706
     },
     {
       "key": "micro",
       "display": "微盘",
       "category": "规模",
-      "r_1m": -0.0562,
-      "r_3m": -0.0695
+      "r_1m": -0.0597,
+      "r_3m": -0.0672
     },
     {
-      "key": "mkt",
-      "display": "市场",
-      "category": "市场",
-      "r_1m": -0.0552,
-      "r_3m": 0.0102
+      "key": "smb",
+      "display": "小市值",
+      "category": "规模",
+      "r_1m": -0.0384,
+      "r_3m": -0.0317
     }
   ],
   "ranking_top": [
@@ -62,22 +62,22 @@
       "key": "reversal",
       "display": "反转",
       "category": "反转",
-      "r_1m": 0.0477,
-      "r_3m": -0.0367
+      "r_1m": 0.0295,
+      "r_3m": -0.0483
     },
     {
       "key": "lowvol",
       "display": "低波",
       "category": "低波",
-      "r_1m": 0.0367,
-      "r_3m": -0.0443
+      "r_1m": 0.0191,
+      "r_3m": -0.0511
     },
     {
       "key": "dividend",
       "display": "红利",
       "category": "红利",
-      "r_1m": 0.0227,
-      "r_3m": -0.0586
+      "r_1m": 0.0184,
+      "r_3m": -0.0632
     }
   ],
   "ranking_bottom": [
@@ -85,22 +85,22 @@
       "key": "quality",
       "display": "质量",
       "category": "质量",
-      "r_1m": -0.0837,
-      "r_3m": -0.1512
+      "r_1m": -0.0959,
+      "r_3m": -0.1706
     },
     {
       "key": "micro",
       "display": "微盘",
       "category": "规模",
-      "r_1m": -0.0562,
-      "r_3m": -0.0695
+      "r_1m": -0.0597,
+      "r_3m": -0.0672
     },
     {
-      "key": "mkt",
-      "display": "市场",
-      "category": "市场",
-      "r_1m": -0.0552,
-      "r_3m": 0.0102
+      "key": "smb",
+      "display": "小市值",
+      "category": "规模",
+      "r_1m": -0.0384,
+      "r_3m": -0.0317
     }
   ],
   "caveats": [
@@ -111,7 +111,7 @@
     "仅供量化研究参考，不构成投资建议。"
   ],
   "sources": [
-    "D:\\Claude\\Brain\\wiki\\sources\\2026-06-05-ssrn-6823998-yang-2026-hmm-factor-regimes.md",
-    "D:\\Claude\\Brain\\wiki\\entities\\效率系数.md"
+    "vault/wiki/sources/2026-06-05-ssrn-6823998-yang-2026-hmm-factor-regimes.md",
+    "vault/wiki/entities/效率系数.md"
   ]
 }
