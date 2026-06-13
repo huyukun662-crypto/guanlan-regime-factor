@@ -14,6 +14,11 @@
   }
 
   async function refresh() {
+    if (!input.value.trim()) {            // client-side guard before round-trip
+      showToast("✗ 请先填 Tushare token（每次必填，不存盘）", "err", 5000);
+      input.focus();
+      return;
+    }
     btn.disabled = true;
     const label = btn.textContent;
     btn.textContent = "刷新中…";

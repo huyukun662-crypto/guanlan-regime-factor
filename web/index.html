@@ -38,9 +38,10 @@
         </div>
         <div class="topbar-meta">
           <div class="refresh-box">
-            <input id="token-input" type="password" placeholder="Tushare token（可留空）"
-                   autocomplete="off" spellcheck="false" />
-            <button id="refresh-btn" type="button" title="重拉数据并重算">⟳ 刷新数据</button>
+            <input id="token-input" type="password" placeholder="Tushare token（每次必填，不存盘）"
+                   autocomplete="off" spellcheck="false" required />
+            <button id="refresh-btn" type="button"
+                    title="重拉数据并重算（每次必须填 Tushare token，不会保存）">⟳ 刷新数据</button>
           </div>
           <button id="llm-settings-btn" class="pill pill-btn"
                   type="button" title="配置 AI 顾问的 LLM 厂商与 API key">⚙ AI 配置</button>

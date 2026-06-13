@@ -69,11 +69,13 @@ async def post_chat(body: dict) -> StreamingResponse:
 
 @app.post("/api/refresh")
 async def post_refresh(body: dict) -> JSONResponse:
-    """Optional Tushare-token update + full pipeline rerun for today. localhost only."""
+    """Tushare-token required (from form input); full pipeline rerun for today. localhost only."""
     token = (body or {}).get("token", "")
     try:
         result = await run_in_threadpool(refreshmod.run_refresh, token)
         return JSONResponse(result)
+    except refreshmod.TokenRequired as ex:
+        return JSONResponse({"ok": False, "error": str(ex), "code": "token_required"}, status_code=400)
     except Exception as ex:                 # noqa: BLE001 — report, don't 500 the UI
         return JSONResponse({"ok": False, "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
 

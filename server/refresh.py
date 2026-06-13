@@ -34,11 +34,35 @@ def update_token(token: str) -> None:
     os.environ["TUSHARE_TOKEN"] = token        # running server uses it immediately
 
 
-def run_refresh(token: str = "") -> dict:
-    """Update token (if given), rerun the pipeline for today, return a compact summary."""
-    if token and token.strip():
-        update_token(token)
+class TokenRequired(Exception):
+    """Raised when /api/refresh is called without a Tushare token in the request body."""
 
+
+def run_refresh(token: str = "") -> dict:
+    """Rerun the pipeline for today using the token from the request body.
+
+    Web-UI refresh policy: token MUST come from the form input (never falls back to .env, never
+    persisted to disk). The token only lives in this process's env for the duration of the run
+    and is cleared again on completion, so a server restart loses it — by design.
+    """
+    token = (token or "").strip()
+    if not token:
+        raise TokenRequired("请在输入框填写 Tushare token")
+    # Apply for this run only — overwrite any previous value, do NOT write .env.
+    prev = os.environ.get("TUSHARE_TOKEN")
+    os.environ["TUSHARE_TOKEN"] = token
+    try:
+        return _run_pipeline()
+    finally:
+        # Scrub token from this process's env. If there was an older value (e.g. set
+        # during process startup from .env when it still had one) restore it; else delete.
+        if prev is None:
+            os.environ.pop("TUSHARE_TOKEN", None)
+        else:
+            os.environ["TUSHARE_TOKEN"] = prev
+
+
+def _run_pipeline() -> dict:
     from fof.config import DEFAULT_CONFIG
     from fof import report, sleeves
     from fof import data as datamod
