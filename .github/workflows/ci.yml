@@ -27,7 +27,14 @@ jobs:
       - name: Syntax check (compileall)
         run: python -m compileall fof server scripts .claude/skills
       - name: Run network-free tests
-        # The full suite (test_regime/master/factors/...) fetches live Tushare data and
-        # needs a TUSHARE_TOKEN secret + network, so it is not run on CI. test_factor_allocation
-        # is pure dict→dict (no network) and validates the integration mapping.
-        run: python -m pytest tests/test_factor_allocation.py -q
+        # The full suite (test_regime/master/factors/sleeves_new/...) fetches live Tushare data
+        # via the parquet cache; we only run the subset whose imports/asserts don't touch the
+        # network. test_factor_allocation is pure dict→dict; test_selection, test_weights,
+        # test_perf, test_factors validate selection/weights/perf math on small frames in-memory.
+        run: |
+          python -m pytest -q \
+            tests/test_factor_allocation.py \
+            tests/test_selection.py \
+            tests/test_weights.py \
+            tests/test_perf.py \
+            tests/test_factors.py

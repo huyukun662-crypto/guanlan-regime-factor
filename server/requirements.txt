@@ -1,3 +1,7 @@
+# 仅 dashboard 后端最小依赖。这是个**子集**，不是完整运行所需。
+# /api/refresh 仍会调用 fof/ → 间接需要 pandas/numpy/tushare/akshare/efinance/hmmlearn/scikit-learn 等。
+# 完整部署请用项目根的 requirements.txt：
+#     pip install -r ../requirements.txt
 fastapi>=0.110
 uvicorn[standard]>=0.27
 anthropic>=0.40

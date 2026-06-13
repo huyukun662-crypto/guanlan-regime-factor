@@ -48,17 +48,27 @@ def run_refresh(token: str = "") -> dict:
     datamod.refresh_tail(sleeves.all_codes(), today)
     cfg = replace(DEFAULT_CONFIG, asof=today)
     dash = report.run_all(cfg, write=True)
-    report.write_before_after_md(dash["before_after"], cfg)
+    # FOF 已从 run_all 移除，dash 只剩 regime/master/factors；before_after.md 不再随刷新重写
+    # （它属于 ETF-FOF 证据链，要更新走 scripts/grid_search.py + 手动重生成）。
 
-    reg, alloc, ba = dash["regime"], dash["fof_allocation"], dash["before_after"]
-    picks = ("全仓货基" if alloc["fallback_to_cash"]
-             else "、".join(f"{s['display']} {int(s['weight'] * 100)}%"
-                            for s in alloc["selected_sleeves"]))
+    reg = dash["regime"]
+    master = dash.get("master", {}) or {}
+    factors = dash.get("factors", {}) or {}
+    fac_alloc_path = ROOT / "outputs" / "factor_allocation.json"
+    fac_alloc = {}
+    if fac_alloc_path.exists():
+        import json
+        try:
+            fac_alloc = json.loads(fac_alloc_path.read_text(encoding="utf-8"))
+        except Exception:
+            fac_alloc = {}
     return {
         "ok": True, "asof": reg["asof"],
         "composite_score": reg["composite_score"], "band": reg["band"],
         "regime_label": reg["regime_label"], "equity_exposure": reg["equity_exposure"],
-        "allocation": picks, "money_market": alloc["money_market_weight"],
-        "sharpe": ba["treatment"]["sharpe"], "calmar": ba["treatment"]["calmar"],
-        "max_dd": ba["treatment"]["max_dd"],
+        "verdict": master.get("verdict"), "master_score": master.get("master_score"),
+        "n_factors": factors.get("n_factors"),
+        "posture": fac_alloc.get("posture"),
+        "overweight": [f["display"] for f in (fac_alloc.get("overweight") or [])],
+        "underweight": [f["display"] for f in (fac_alloc.get("underweight") or [])],
     }

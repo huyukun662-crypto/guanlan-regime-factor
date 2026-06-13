@@ -33,16 +33,14 @@ def main() -> int:
         print(f"  refresh_tail: {n} codes gained new bars", flush=True)
         cfg = replace(DEFAULT_CONFIG, asof=today)
         dash = report.run_all(cfg, write=True)
-        report.write_before_after_md(dash["before_after"], cfg)
-        reg, alloc, ba = dash["regime"], dash["fof_allocation"], dash["before_after"]
-        picks = ("全仓货基" if alloc["fallback_to_cash"]
-                 else ", ".join(f"{s['display']} {int(s['weight'] * 100)}%"
-                                for s in alloc["selected_sleeves"]))
+        # FOF 已从 run_all 移除；只剩 regime/master/factors
+        reg = dash["regime"]
+        master = dash.get("master", {}) or {}
+        factors = dash.get("factors", {}) or {}
         print(f"OK  风险分={reg['composite_score']} ({reg['band']})  regime={reg['regime_label']} "
               f"敞口={reg['equity_exposure']}", flush=True)
-        print(f"    配置: {picks} | 货基 {int(alloc['money_market_weight'] * 100)}%", flush=True)
-        print(f"    FOF 夏普={ba['treatment']['sharpe']} 卡尔马={ba['treatment']['calmar']} "
-              f"最大回撤={ba['treatment']['max_dd']}", flush=True)
+        print(f"    大势研判={master.get('verdict')} (分 {master.get('master_score')})  "
+              f"因子={factors.get('n_factors')}", flush=True)
         return 0
     except Exception:                       # noqa: BLE001 — log everything for the scheduler
         print("FAILED:\n" + traceback.format_exc(), flush=True)
