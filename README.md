@@ -83,8 +83,8 @@ python -m venv venv
 python -m pip install -r requirements.txt
 
 # 2. 看 demo —— 无需任何 token：仓库已带 outputs/*.json
-python -m uvicorn server.app:app --port 8000
-#   浏览器开 http://127.0.0.1:8000 （大势研判）/ http://127.0.0.1:8000/factors.html （因子）
+python scripts/open_dashboard.py        # 一键：起服务(后台)+自动开浏览器到 127.0.0.1:8000
+#   或手动： python -m uvicorn server.app:app --port 8000  然后开 http://127.0.0.1:8000 / /factors.html
 
 # 3. 要刷新到最新数据，再配自己的 token
 cp .env.example .env          # Windows: Copy-Item .env.example .env

@@ -53,8 +53,6 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
    Produce a cited research brief: (1) the grounded rationale (≥2 vault paths); (2) current
    **大势 verdict + confidence**, the **风险 band**, and the **因子轮动** read; (3) one-line
    posture (进攻/中性/防御) tied to the verdict + risk band, never to a single number in isolation.
-   Tell the user to open `http://127.0.0.1:8000` (大势研判) / `/factors.html` (因子) after
-   `python -m uvicorn server.app:app --port 8000` for the live charts + AI advisor.
 
 5. **ADVISE (optional) — `factor-allocation`.** Only when the user asks for *配置建议*
    ("现在该超配/低配哪些风格 / 该进攻还是防御配什么"): `python
@@ -63,7 +61,14 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
    符号定) → `factor_allocation.json`. 纯解读、**不建组合不回测不出权重**. **诚实**：姿态优先于 tilt、
    因子动量弱(IC≈0.04→弱倾斜别重押)、这是研究建议非组合；照 references 标注，不吹成 alpha。
 
-## Hard rules
+6. **OFFER TO OPEN THE DASHBOARD — always end this way.**
+   在简报的最后**主动问一句**：「要打开仪表盘看可视化吗？（大势研判 + 因子两页 + AI 顾问）」
+   **不要**自己擅自启动服务；等用户确认（「打开 / 好 / open / yes」）后，再运行这条**跨平台一键**命令：
+   ```bash
+   python scripts/open_dashboard.py        # 起服务(detached)+开浏览器 → http://127.0.0.1:8000
+   ```
+   它是后台常驻进程（已 detached，不会阻塞你；无 token 也能渲染内置 outputs/*.json）。Windows 用户
+   也可双击 `start.bat`。若用户说不用，就正常收尾、不启动任何东西。
 - **Look-ahead safety:** every indicator/selection uses only trailing data (`series.loc[:asof]`);
   backtest returns are `nav.pct_change().shift(-1)` (decide on close, earn next day). Enforced in
   `fof/`; never bypass. The 大势 history color band is **walk-forward out-of-sample**, not a
@@ -78,4 +83,5 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
 
 ## Output
 End with: (1) cited rationale (≥2 vault paths), (2) verdict + confidence + risk band + factor read
-(all from the JSON), (3) the deterministic posture line, (4) the dashboard URL.
+(all from the JSON), (3) the deterministic posture line, (4) **the question「要打开仪表盘吗？」**
+— and only launch `python scripts/open_dashboard.py` after the user says yes.
