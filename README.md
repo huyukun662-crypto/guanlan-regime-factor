@@ -91,7 +91,7 @@ python -m pytest tests -q                             # 全量（需 TUSHARE_TOK
 ```
 
 - **无 `TUSHARE_TOKEN`**：仪表板用仓库内置的 `outputs/*.json` 正常渲染（demo）；只有「刷新数据 / 重跑 pipeline」才需要 token。
-- **无 `ANTHROPIC_API_KEY`**：pipeline、仪表板、确定性研判建议**全部可用**，仅实时聊天降级为基线建议。
+- **AI 顾问（可换厂商）**：默认走 Anthropic（`ANTHROPIC_API_KEY`），也支持 OpenAI / DeepSeek / Moonshot Kimi / Zhipu / 通义千问 / Ollama 等任何 **OpenAI 兼容**接口——在 `.env` 设 `LLM_PROVIDER=openai` + `LLM_API_KEY` + `LLM_BASE_URL` + `LLM_MODEL` 即可（见 `.env.example` 示例）。无 key 则降级为确定性基线建议，pipeline 与仪表板**全部可用**。
 - **研报库**：`quant-research-retriever` 默认读仓库内置 `vault/`；想换成自己的 Obsidian 库，设环境变量 `QUANT_VAULT_PATH` 或传 `--vault`。库缺失时优雅返回空引用（不崩）。
 - **🔐 密钥安全**：`.env` 已 gitignore，**绝不入库**。clone 者各自填自己的 token；任何曾在别处明文出现过的 token 请在 tushare.pro **及时轮换**。
 

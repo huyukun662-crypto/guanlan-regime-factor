@@ -36,7 +36,11 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"ok": True, "key_available": chat.key_available()}
+    prov, _key, base, model = chat._resolve_provider()
+    return {
+        "ok": True, "key_available": chat.key_available(),
+        "llm_provider": prov, "llm_model": model, "llm_base_url": base or None,
+    }
 
 
 @app.get("/api/dashboard")

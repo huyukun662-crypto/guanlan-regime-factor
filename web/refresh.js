@@ -27,8 +27,10 @@
       const d = await r.json();
       input.value = "";                     // never keep the token in the DOM
       if (d.ok) {
+        const verdict = d.verdict || d.regime_label || "—";
+        const ow = (d.overweight && d.overweight.length) ? "·超配 " + d.overweight.join("/") : "";
         showToast(`✓ 刷新成功 · ${d.asof} · 风险分 ${d.composite_score}(${d.band}) · `
-          + `${d.regime_label} · 夏普 ${d.sharpe} · 即将刷新页面…`, "ok", 0);
+          + `大势 ${verdict}${ow} · 即将刷新页面…`, "ok", 0);
         setTimeout(() => location.reload(), 1400);
       } else {
         showToast("✗ 刷新失败：" + (d.error || "未知错误"), "err", 9000);

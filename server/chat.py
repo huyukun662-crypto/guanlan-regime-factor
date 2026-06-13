@@ -1,8 +1,22 @@
-"""Anthropic streaming wrapper for the dashboard advisor.
+"""Streaming LLM wrapper for the dashboard advisor (provider-pluggable).
 
 Builds a cache-controlled system prompt from the current outputs/*.json so the advisor
 answers from real, computed numbers (never fabricated). Degrades gracefully to the
-deterministic advice line when no ANTHROPIC_API_KEY is configured.
+deterministic advice line when no API key is configured.
+
+Provider selection (env, .env-loaded):
+- LLM_PROVIDER   = anthropic | openai          (default: anthropic if ANTHROPIC_API_KEY set,
+                                                else openai if OPENAI_API_KEY/LLM_API_KEY set)
+- LLM_API_KEY    = api key (overrides provider-specific key vars)
+- LLM_BASE_URL   = custom endpoint for openai-compatible providers, e.g.
+                     DeepSeek:  https://api.deepseek.com
+                     Moonshot:  https://api.moonshot.cn/v1
+                     Zhipu:     https://open.bigmodel.cn/api/paas/v4
+                     通义千问:  https://dashscope.aliyuncs.com/compatible-mode/v1
+                     Ollama:    http://localhost:11434/v1
+- LLM_MODEL      = model id  (defaults: claude-opus-4-8 | gpt-4o-mini)
+
+Both `ANTHROPIC_API_KEY` (legacy) and the new vars are supported for backward compat.
 """
 
 from __future__ import annotations
@@ -15,13 +29,39 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS = ROOT / "outputs"
-MODEL = "claude-opus-4-8"
-
 load_dotenv(ROOT / ".env")
+
+_DEFAULT_MODEL = {"anthropic": "claude-opus-4-8", "openai": "gpt-4o-mini"}
+
+
+def _resolve_provider() -> tuple[str, str, str, str]:
+    """Return (provider, api_key, base_url, model). Empty api_key → no-key mode."""
+    provider = (os.environ.get("LLM_PROVIDER") or "").strip().lower()
+    key = (os.environ.get("LLM_API_KEY") or "").strip()
+    base = (os.environ.get("LLM_BASE_URL") or "").strip()
+    model = (os.environ.get("LLM_MODEL") or "").strip()
+
+    anth_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    oai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    # auto-detect: explicit LLM_PROVIDER > LLM_API_KEY+base hint > Anthropic > OpenAI
+    if not provider:
+        if key and base:
+            provider = "openai"
+        elif anth_key:
+            provider = "anthropic"
+        elif oai_key:
+            provider = "openai"
+        else:
+            provider = "anthropic"
+    if not key:
+        key = anth_key if provider == "anthropic" else oai_key
+    model = model or _DEFAULT_MODEL.get(provider, "")
+    return provider, key, base, model
 
 
 def key_available() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
+    _, key, _, _ = _resolve_provider()
+    return bool(key)
 
 
 def _load(name: str) -> dict:
@@ -59,33 +99,57 @@ def build_system_prompt() -> str:
 
 
 def stream_chat(messages: list[dict]):
-    """Yield SSE-formatted strings. Falls back to advice_baseline with no key."""
-    if not key_available():
+    """Yield SSE-formatted strings. Provider-pluggable; falls back to baseline if no key."""
+    provider, api_key, base_url, model = _resolve_provider()
+
+    if not api_key:
         reg = _load("regime.json")
         yield _sse({"type": "delta", "text": reg.get(
             "advice_baseline", "请先运行 run_pipeline.py 生成数据。")})
-        yield _sse({"type": "info", "text": "实时 AI 已禁用（未配置 ANTHROPIC_API_KEY）。"
+        yield _sse({"type": "info", "text": "实时 AI 已禁用（未配置 LLM API key）。"
                                             "以上为确定性基线建议。"})
         yield _sse({"type": "done"})
         return
 
-    import anthropic
-    client = anthropic.Anthropic()
-    system = [{"type": "text", "text": build_system_prompt(),
-               "cache_control": {"type": "ephemeral"}}]
+    system_text = build_system_prompt()
     try:
-        with client.messages.stream(
-            model=MODEL, max_tokens=1500,
-            thinking={"type": "disabled"},
-            output_config={"effort": "low"},
-            system=system, messages=messages,
-        ) as stream:
-            for text in stream.text_stream:
-                yield _sse({"type": "delta", "text": text})
+        if provider == "anthropic":
+            yield from _stream_anthropic(model, api_key, system_text, messages)
+        else:
+            yield from _stream_openai_compatible(model, api_key, base_url, system_text, messages)
         yield _sse({"type": "done"})
-    except anthropic.APIError as ex:           # surface, never 500 the stream
-        yield _sse({"type": "error", "text": f"调用失败：{ex.__class__.__name__}"})
+    except Exception as ex:                    # surface, never 500 the stream
+        yield _sse({"type": "error",
+                    "text": f"调用失败({provider})：{ex.__class__.__name__}: {str(ex)[:200]}"})
         yield _sse({"type": "done"})
+
+
+def _stream_anthropic(model: str, api_key: str, system_text: str, messages: list[dict]):
+    import anthropic
+    client = anthropic.Anthropic(api_key=api_key)
+    system = [{"type": "text", "text": system_text, "cache_control": {"type": "ephemeral"}}]
+    with client.messages.stream(
+        model=model, max_tokens=1500, system=system, messages=messages,
+    ) as stream:
+        for text in stream.text_stream:
+            yield _sse({"type": "delta", "text": text})
+
+
+def _stream_openai_compatible(model: str, api_key: str, base_url: str,
+                              system_text: str, messages: list[dict]):
+    """Works with OpenAI, DeepSeek, Moonshot Kimi, Zhipu, Qwen DashScope, Ollama, etc."""
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key, base_url=base_url or None)
+    chat_msgs = [{"role": "system", "content": system_text}, *messages]
+    stream = client.chat.completions.create(
+        model=model, messages=chat_msgs, max_tokens=1500, stream=True)
+    for chunk in stream:
+        if not chunk.choices:
+            continue
+        delta = chunk.choices[0].delta
+        text = getattr(delta, "content", None)
+        if text:
+            yield _sse({"type": "delta", "text": text})
 
 
 def _sse(obj: dict) -> str:

@@ -4,8 +4,8 @@
     {
       "name": "fof-dashboard",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "uvicorn", "server.app:app", "--port", "8000", "--host", "127.0.0.1"],
-      "port": 8000
+      "runtimeArgs": ["-m", "uvicorn", "server.app:app", "--host", "127.0.0.1"],
+      "autoPort": true
     }
   ]
 }
