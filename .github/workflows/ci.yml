@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Syntax check (compileall)
+        run: python -m compileall fof server scripts .claude/skills
+      - name: Run network-free tests
+        # The full suite (test_regime/master/factors/...) fetches live Tushare data and
+        # needs a TUSHARE_TOKEN secret + network, so it is not run on CI. test_factor_allocation
+        # is pure dict→dict (no network) and validates the integration mapping.
+        run: python -m pytest tests/test_factor_allocation.py -q

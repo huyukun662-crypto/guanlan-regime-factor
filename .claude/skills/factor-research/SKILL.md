@@ -1,0 +1,47 @@
+---
+name: factor-research
+description: >
+  因子研究 —— 构建并解读 12 个真实 A 股风格指数代理因子（动量/反转/小市值/微盘/大盘/价值/成长/科技成长/
+  红利/低波/质量/市场）的因子看板：累积收益曲线、近期轮动排行(1M/3M/YTD)、因子轮动月度 IC + 12 月滚动
+  ICIR、各因子滚动 Sharpe、全样本统计(年化/夏普/回撤/波动)、相关性矩阵。Emits outputs/factors.json.
+  触发语：「看因子」「因子轮动 IC」「哪个风格在风口」「因子表现怎么样」"factor board / rotation IC /
+  which style is leading". 这是风格指数 long-short 序列，**不是**个股选股 IC，也不做组合配权。
+allowed-tools: Bash, Read
+---
+
+# factor-research（因子研究）
+
+把 12 个真实风格/Smart-beta 指数的 long-short 收益，做成可解读的因子看板：谁在风口（轮动排行）、风格
+能不能追涨（轮动 IC）、各因子稳不稳（滚动 Sharpe）、长期值不值（全样本统计）。
+
+## When to use
+- 「最近哪个风格因子强？」「风格轮动追涨有用吗？」/ "which factor is leading? is style momentum real?"
+- 刷新 `factors.html` 因子看板前重算 `factors.json`。
+
+## When NOT to use
+- 不是经典**个股横截面选股 IC**（那需要全市场个股因子暴露，本项目用风格指数序列代理）。
+- 不做组合配权/回测（FOF 组合已从仪表板移除，代码留在 `fof/` 作证据）。
+
+## Run
+```bash
+python .claude/skills/factor-research/scripts/compute_factors.py --asof 2026-06-05
+```
+`fof.factors.build_factor_board(cfg)`（`result=None` → 纯因子、不含 FOF 暴露）的薄包装，写
+`outputs/factors.json`，并打印一行摘要 `{n_factors, top_factor, ic_mean, icir, hit_rate}`。
+
+## Output schema (`outputs/factors.json`)
+`{n_factors, ranking{asof, factors:[{key,display,category,r_1m,r_3m,r_ytd,rank}]},
+cumulative{dates, series, labels}, tearsheet{factors:[{display,category,ann,sharpe,maxdd,vol}]},
+correlation{matrix, labels},
+rotation_ic{signal, dates, ic, rolling_icir, icir, ic_mean, hit_rate},
+rolling_sharpe{dates, series, labels}}`。
+
+## 读法与诚实口径
+**因子轮动月度 IC 的完整读法、当前诚实读数、以及两个口径提醒，见
+`references/reading-factor-ic.md`**（与 `factors.html` 网页使用说明同源）。一句话先记住：当前
+**IC≈0.04 / ICIR≈0.09 / 胜率≈55% → A 股因子动量很弱，简单"追风口"赚不到稳定钱**——这是真实结果，
+汇报时不要美化成 alpha。
+
+## Look-ahead safety
+全部委托 `fof.factors`：IC 用"当月排名 → 次月收益"，月度对齐天然防前视；滚动 Sharpe/累积均为 trailing。
+脚本不引入未来数据。

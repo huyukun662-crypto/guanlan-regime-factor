@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>观澜 · 因子看板</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">◈</span> 观澜 · 因子</div>
+      <nav class="nav">
+        <div class="nav-group">纯因子看板</div>
+        <a class="nav-item active" href="#cum">累积收益</a>
+        <a class="nav-item" href="#rank">轮动排行</a>
+        <a class="nav-item" href="#perf">因子表现</a>
+        <a class="nav-item" href="#tear">全样本统计</a>
+        <div class="nav-group">其它</div>
+        <a class="nav-item" href="/">← 大势研判</a>
+      </nav>
+      <div class="sidebar-foot"><div class="badge-pro">研究工具 · 仅供参考</div></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1>因子看板 · 纯因子</h1>
+          <span class="subtitle">12 个真实 A 股风格指数代理因子 · 动量/反转/小市值/价值/成长/质量/低波/红利…</span>
+        </div>
+        <div class="topbar-meta">
+          <span id="asof-pill" class="pill pill-date">—</span>
+          <span id="nf-pill" class="pill">—</span>
+        </div>
+      </header>
+
+      <div id="error-banner" class="error-banner" hidden></div>
+
+      <h2 class="section-h" id="cum">因子累积收益 <small>（真实风格指数 long-short，起点归一为 1）</small></h2>
+      <section class="card chart-card">
+        <div class="trend-tabs">
+          <div class="tab-group" id="cat-tabs"></div>
+          <div class="tab-group" id="range-tabs">
+            <button data-range="30">30天</button>
+            <button data-range="60">60天</button>
+            <button data-range="120">120天</button>
+            <button data-range="250">250天</button>
+            <button data-range="500">500天</button>
+            <button data-range="0" class="active">全部</button>
+          </div>
+          <button class="zoom-reset" data-target="cum-chart" title="重置缩放">⟲ 重置</button>
+        </div>
+        <canvas id="cum-chart" height="110"></canvas>
+        <p class="muted small">点图例可隐藏单条；上方按类别/时间窗口；图内<b>按住拖动＝平移 · 滚轮＝缩放 · Shift+拖拽＝框选放大</b>，点「重置」还原。</p>
+      </section>
+
+      <h2 class="section-h" id="rank">近期收益 · 轮动排行 <small>（按近 1 月收益排序）</small></h2>
+      <section class="card">
+        <div id="factor-ranking" class="heatmap-wrap"></div>
+        <p class="muted small">红涨绿跌——看哪个风格因子在风口。</p>
+      </section>
+
+      <h2 class="section-h" id="perf">因子表现 <small>（因子轮动月度IC + ICIR · 各因子滚动Sharpe）</small></h2>
+      <section class="card chart-card">
+        <h2 class="card-title">因子轮动 月度IC <span id="ic-kpi" class="muted"></span></h2>
+        <div class="trend-tabs">
+          <div class="tab-group" id="ic-range-tabs">
+            <button data-range="12">12月</button>
+            <button data-range="24">24月</button>
+            <button data-range="36">36月</button>
+            <button data-range="0" class="active">全部</button>
+          </div>
+          <button class="zoom-reset" data-target="factor-ic-chart" title="重置缩放">⟲ 重置</button>
+        </div>
+        <div class="chart-box"><canvas id="factor-ic-chart"></canvas></div>
+        <p class="muted small">柱=每月按当月收益给 12 因子排名 vs 次月收益的横截面秩相关（绿正红负），折线=12月滚动 ICIR。IC&gt;0=因子动量有效（赢家持续），&lt;0=反转。</p>
+        <details class="help">
+          <summary>这张图什么意思？怎么读？（点击展开）</summary>
+          <div class="help-body">
+            <p><b>它回答一个问题：A 股的风格能不能"追涨"？</b>每个月底，给 12 个风格因子（动量/反转/小市值/价值/成长/红利/低波/质量…）按<b>当月收益</b>排个名；等下月结束，再看它们<b>次月收益</b>的排名；两份排名的秩相关（Spearman ∈ [-1,1]）就是这个月的 <b>IC</b>。</p>
+            <ul>
+              <li><b style="color:#1aa861">IC&gt;0（绿柱）</b>：本月强的因子下月<b>继续强</b> → 因子有动量惯性，"买上月领涨风格"有效。</li>
+              <li><b style="color:#e2503f">IC&lt;0（红柱）</b>：本月强的因子下月<b>反而弱</b> → 因子反转，该做高低切换（卖涨多的、买跌多的）。</li>
+              <li><b>IC≈0</b>：本月排名对下月没有预测力，风格切换接近随机。</li>
+            </ul>
+            <p><b>ICIR</b>=IC均值/IC标准差，衡量这种预测力<b>稳不稳定</b>（信噪比，业内一般要 ≥0.3 才算可用）；<b>胜率</b>=IC&gt;0 的月份占比。</p>
+            <p><b>当前读数的诚实结论</b>：IC均值≈0.04、ICIR≈0.09、胜率≈55% —— <b>A 股因子动量非常弱</b>，简单"追风口"几乎赚不到稳定的钱（风格轮动快、反转多）。这个弱结果是真实的、未美化。</p>
+            <p class="help-note"><b>两个口径提醒</b>：①这里的因子是<b>风格指数 long-short 收益序列</b>（无个股横截面），所以衡量的是<b>因子之间互相轮动</b>的可预测性，<b>不是</b>经典的"单因子选股 IC"（那需要全市场个股层面的因子暴露数据）；②它说的是"风格择时/轮动"难不难，不是"某个因子本身好不好"——后者看下面的「全样本统计」表（夏普/年化）。</p>
+          </div>
+        </details>
+      </section>
+      <section class="card chart-card">
+        <h2 class="card-title">各因子 滚动 Sharpe（126日）</h2>
+        <div class="trend-tabs">
+          <div class="tab-group" id="rs-cat-tabs"></div>
+          <div class="tab-group" id="rs-range-tabs">
+            <button data-range="30">30天</button>
+            <button data-range="60">60天</button>
+            <button data-range="120">120天</button>
+            <button data-range="250">250天</button>
+            <button data-range="500">500天</button>
+            <button data-range="0" class="active">全部</button>
+          </div>
+          <button class="zoom-reset" data-target="factor-rs-chart" title="重置缩放">⟲ 重置</button>
+        </div>
+        <div class="chart-box"><canvas id="factor-rs-chart"></canvas></div>
+        <p class="muted small">每个因子一条曲线，点图例可隐藏；图内<b>按住拖动＝平移 · 滚轮＝缩放 · Shift+拖拽＝框选放大</b>，点「重置」还原。纵轴钳制在 ±5（个别因子早期样本的极端值会贴边显示，避免压扁全图）。</p>
+      </section>
+
+      <h2 class="section-h" id="tear">因子全样本统计 <small>（年化 / 夏普 / 最大回撤 / 波动率，按夏普排序）</small></h2>
+      <section class="card">
+        <div id="factor-tear" class="heatmap-wrap"></div>
+        <p class="muted small">夏普=年化/年化波动（无无风险利率）；窗口为全样本回测区间。</p>
+      </section>
+
+      <footer class="foot">
+        因子收益 = 真实 A 股风格/Smart-beta 指数 long-short。本平台仅供量化研究参考，不构成投资建议。 © 2026 观澜
+      </footer>
+    </main>
+  </div>
+
+  <script src="factors.js?v=20260611-help"></script>
+</body>
+</html>

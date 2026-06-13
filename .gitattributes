@@ -1,0 +1,12 @@
+# Normalize line endings: LF in the repo for text, native on checkout.
+* text=auto eol=lf
+
+# Windows-only launch/scheduler scripts must stay CRLF to run correctly.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.vbs text eol=crlf
+
+# Binary
+*.parquet binary
+*.png binary
+*.jpg binary

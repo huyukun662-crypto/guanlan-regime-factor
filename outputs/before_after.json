@@ -1,0 +1,47 @@
+{
+  "window": {
+    "start": "2020-04-30",
+    "end": "2026-06-05"
+  },
+  "single_strategy": {
+    "name": "单一动量策略(圣杯陷阱)",
+    "ann_return": 0.2111,
+    "max_dd": -0.2806,
+    "sharpe": 0.8098,
+    "calmar": 0.7525,
+    "monthly_win_rate": 0.527,
+    "turnover_annual": null
+  },
+  "baseline": {
+    "name": "等权静态组合",
+    "ann_return": 0.0811,
+    "max_dd": -0.095,
+    "sharpe": 0.8527,
+    "calmar": 0.854,
+    "monthly_win_rate": 0.5135,
+    "turnover_annual": null
+  },
+  "treatment": {
+    "name": "regime门控风险平价FOF",
+    "ann_return": 0.1117,
+    "max_dd": -0.0971,
+    "sharpe": 1.0598,
+    "calmar": 1.1498,
+    "monthly_win_rate": 0.7297,
+    "turnover_annual": 6.6459
+  },
+  "delta_vs_baseline": {
+    "ann_return": 0.0306,
+    "max_dd": -0.0021,
+    "sharpe": 0.2071,
+    "calmar": 0.2958,
+    "monthly_win_rate": 0.2162
+  },
+  "delta_vs_single": {
+    "ann_return": -0.0994,
+    "max_dd": 0.1835,
+    "sharpe": 0.25,
+    "calmar": 0.3973,
+    "monthly_win_rate": 0.2027
+  }
+}

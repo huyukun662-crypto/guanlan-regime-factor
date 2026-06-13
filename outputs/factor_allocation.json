@@ -1,0 +1,117 @@
+{
+  "asof": "2026-06-11",
+  "verdict": "震荡",
+  "master_score": 48.8,
+  "confidence": 53.0,
+  "posture": "中性",
+  "equity_hint": "中（半仓 / 择优）",
+  "tilt_mode": "动量（追涨：上月领涨风格倾向延续）",
+  "tilt_basis": {
+    "ic_mean": 0.042,
+    "icir": 0.089,
+    "hit_rate": 0.545
+  },
+  "overweight": [
+    {
+      "key": "reversal",
+      "display": "反转",
+      "category": "反转",
+      "r_1m": 0.0477,
+      "r_3m": -0.0367
+    },
+    {
+      "key": "lowvol",
+      "display": "低波",
+      "category": "低波",
+      "r_1m": 0.0367,
+      "r_3m": -0.0443
+    },
+    {
+      "key": "dividend",
+      "display": "红利",
+      "category": "红利",
+      "r_1m": 0.0227,
+      "r_3m": -0.0586
+    }
+  ],
+  "underweight": [
+    {
+      "key": "quality",
+      "display": "质量",
+      "category": "质量",
+      "r_1m": -0.0837,
+      "r_3m": -0.1512
+    },
+    {
+      "key": "micro",
+      "display": "微盘",
+      "category": "规模",
+      "r_1m": -0.0562,
+      "r_3m": -0.0695
+    },
+    {
+      "key": "mkt",
+      "display": "市场",
+      "category": "市场",
+      "r_1m": -0.0552,
+      "r_3m": 0.0102
+    }
+  ],
+  "ranking_top": [
+    {
+      "key": "reversal",
+      "display": "反转",
+      "category": "反转",
+      "r_1m": 0.0477,
+      "r_3m": -0.0367
+    },
+    {
+      "key": "lowvol",
+      "display": "低波",
+      "category": "低波",
+      "r_1m": 0.0367,
+      "r_3m": -0.0443
+    },
+    {
+      "key": "dividend",
+      "display": "红利",
+      "category": "红利",
+      "r_1m": 0.0227,
+      "r_3m": -0.0586
+    }
+  ],
+  "ranking_bottom": [
+    {
+      "key": "quality",
+      "display": "质量",
+      "category": "质量",
+      "r_1m": -0.0837,
+      "r_3m": -0.1512
+    },
+    {
+      "key": "micro",
+      "display": "微盘",
+      "category": "规模",
+      "r_1m": -0.0562,
+      "r_3m": -0.0695
+    },
+    {
+      "key": "mkt",
+      "display": "市场",
+      "category": "市场",
+      "r_1m": -0.0552,
+      "r_3m": 0.0102
+    }
+  ],
+  "caveats": [
+    "总仓位姿态优先于风格 tilt：先按大势决定多少权益，再谈配哪些风格。",
+    "因子动量很弱（历史 IC 均值≈0.04、ICIR≈0.09、胜率≈55%）→ 风格 tilt 只是弱倾斜，别据此重仓押注。",
+    "防御（走弱）期 tilt 意义小：先降权益，风格选择是次要项。",
+    "这是研究建议、不是组合：不含权重、未回测、未计成本/滑点/换手。",
+    "仅供量化研究参考，不构成投资建议。"
+  ],
+  "sources": [
+    "D:\\Claude\\Brain\\wiki\\sources\\2026-06-05-ssrn-6823998-yang-2026-hmm-factor-regimes.md",
+    "D:\\Claude\\Brain\\wiki\\entities\\效率系数.md"
+  ]
+}

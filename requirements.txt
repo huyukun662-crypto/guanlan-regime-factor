@@ -1,0 +1,18 @@
+# Data + strategy pipeline
+pandas>=2.0
+numpy>=1.24
+pyarrow>=12.0
+tushare>=1.4
+efinance>=0.5        # fallback data source (no token)
+akshare>=1.10        # 国债收益率曲线 fallback（yc_cb 为积分接口，token 常无权限）
+python-dotenv>=1.0
+hmmlearn>=0.3        # 大势研判 regime HMM (Gaussian, walk-forward)
+scikit-learn>=1.3    # hmmlearn dependency
+
+# Live-chat backend
+fastapi>=0.110
+uvicorn[standard]>=0.27
+anthropic>=0.40
+
+# Tests
+pytest>=7.0

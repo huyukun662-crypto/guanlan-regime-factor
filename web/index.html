@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>观澜 · 大势研判 + 因子看板</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">◈</span> 观澜 · 大势研判</div>
+      <nav class="nav">
+        <div class="nav-group">大势研判</div>
+        <a class="nav-item active" href="#gauge">风险仪表盘</a>
+        <a class="nav-item" href="#master">HMM 大势</a>
+        <a class="nav-item" href="#master-method">研判逻辑</a>
+        <a class="nav-item" href="#cards">顶/底 指标</a>
+        <a class="nav-item" href="#trend">风险走势</a>
+        <a class="nav-item" href="#detail">指标详解</a>
+        <div class="nav-group">因子</div>
+        <a class="nav-item" href="/factors.html">因子看板 ↗</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="badge-pro">研究工具 · 仅供参考</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1>大势研判 · 市场状态仪表盘</h1>
+          <span class="subtitle">真实数据 · HMM 4 态 × 效率比 × 基本面 + 风险研判 + 因子看板</span>
+        </div>
+        <div class="topbar-meta">
+          <div class="refresh-box">
+            <input id="token-input" type="password" placeholder="Tushare token（可留空）"
+                   autocomplete="off" spellcheck="false" />
+            <button id="refresh-btn" type="button" title="重拉数据并重算">⟳ 刷新数据</button>
+          </div>
+          <span id="health-pill" class="pill">连接中…</span>
+          <span id="asof-pill" class="pill pill-date">—</span>
+        </div>
+      </header>
+
+      <div id="error-banner" class="error-banner" hidden></div>
+
+      <!-- Gauge + advice -->
+      <section id="gauge" class="row">
+        <div class="card gauge-card">
+          <h2 class="card-title">综合风险评分</h2>
+          <div class="gauge-wrap">
+            <svg id="gauge-svg" viewBox="0 0 240 150" class="gauge"></svg>
+            <div class="gauge-center">
+              <div id="gauge-score" class="gauge-score">—</div>
+              <div id="gauge-band" class="gauge-band">—</div>
+            </div>
+          </div>
+          <div class="band-legend">
+            <span class="b low">低</span><span class="b midlow">中低</span>
+            <span class="b midhigh">中高</span><span class="b high">高</span>
+            <span class="b extreme">极端</span>
+          </div>
+          <div class="gauge-foot">
+            <div><span class="k">Regime</span><span id="regime-label" class="v">—</span></div>
+            <div><span class="k">权益敞口</span><span id="exposure" class="v">—</span></div>
+            <div><span class="k">顶部分</span><span id="top-score" class="v" style="color:var(--bad)">—</span></div>
+            <div><span class="k">底部分</span><span id="bot-score" class="v" style="color:var(--good)">—</span></div>
+          </div>
+        </div>
+
+        <div class="card advice-card">
+          <div class="advice-head">
+            <h2 class="card-title">操作建议 · AI 顾问</h2>
+            <span id="regime-tag" class="tag">—</span>
+          </div>
+          <div id="advice-baseline" class="advice-baseline">加载中…</div>
+          <div class="chat">
+            <div id="chat-log" class="chat-log"></div>
+            <form id="chat-form" class="chat-form">
+              <input id="chat-input" type="text" placeholder="问问当前大势，例如：现在是走强还是震荡？" autocomplete="off" />
+              <button type="submit" id="chat-send">发送</button>
+            </form>
+            <div class="chat-hints">
+              <button class="hint" type="button">当前 regime 是什么？</button>
+              <button class="hint" type="button">HMM 判的什么状态？</button>
+              <button class="hint" type="button">现在是走强还是震荡？</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 大势研判：HMM 4 态 × Kaufman 效率比 × 基本面 -->
+      <h2 class="section-h" id="master">大势研判 <small>（隐马尔可夫 4 态 × Kaufman 效率比 × 基本面；Brain: Yang2026 HMM + 效率系数）</small></h2>
+
+      <!-- Row1: 仪表盘 + 当前状态多维 -->
+      <section class="row">
+        <div class="card master-card">
+          <h2 class="card-title">大势仪表盘 <span class="muted">走弱 / 震荡 / 走强</span></h2>
+          <div class="master-gauge-wrap">
+            <svg id="master-gauge" viewBox="0 0 240 150" class="gauge"></svg>
+            <div class="master-gauge-center">
+              <div class="master-verdict" id="master-verdict">—</div>
+              <div class="master-sub">大势分 <b id="master-score">—</b> · 置信 <b id="master-conf">—</b></div>
+            </div>
+          </div>
+          <div class="band-legend">
+            <span class="b" style="background:#e6f6ee;color:#1aa861">走弱 ≤40</span>
+            <span class="b" style="background:#eef2f7;color:#6b7886">震荡 40-60</span>
+            <span class="b" style="background:#fdece9;color:#e2503f">走强 ≥60</span>
+          </div>
+          <div class="master-gauge-foot">
+            <div><span class="k">当前状态</span><span class="v" id="master-state">—</span></div>
+            <div><span class="k">已持续</span><span class="v" id="master-streak">—</span></div>
+          </div>
+        </div>
+        <div class="card master-card">
+          <h2 class="card-title">当前状态 · 多维</h2>
+          <div class="master-post" id="master-post"></div>
+          <div class="master-metas">
+            <div><span class="k">效率比 ER</span><span class="v" id="master-er">—</span></div>
+            <div><span class="k">基本面</span><span class="v" id="master-fund">—</span></div>
+            <div><span class="k">门控标签</span><span class="v" id="master-gate">—</span></div>
+          </div>
+          <p class="master-advice" id="master-advice"></p>
+        </div>
+      </section>
+
+      <!-- Row2: 价格 × 状态 × ER（+ 状态色带时间轴） -->
+      <section class="card chart-card">
+        <h2 class="card-title">价格 × 状态 × 效率比 <span class="muted">（中证全指 按状态着色 + ER 平滑线）</span>
+          <button class="zoom-reset" data-target="master-chart" title="重置缩放">⟲ 重置</button></h2>
+        <div class="chart-box"><canvas id="master-chart"></canvas></div>
+        <div class="master-ribbon" id="master-ribbon"></div>
+        <p class="muted small">价格线按 HMM 状态着色，下方色带=当日主状态：<b style="color:#e2503f">危机</b>/<b style="color:#8d99ae">平静</b>/<b style="color:#e8a13a">履冰</b>/<b style="color:#1aa861">稳态</b>（浅灰=暖机期未判定）；橙色面积=效率比（21日平滑，右轴 0-1，高=趋势强）。<b>按住拖动＝平移时间轴 · 滚轮＝缩放 · Shift+拖拽＝框选放大</b>。状态为每月末用截至当月数据重拟合后对<b>当月</b>的判定（nowcast，无前视）；原始 ER 在涨跌停日会虚高，故展示平滑值。</p>
+      </section>
+
+      <!-- Row3: 状态画像（实测证据） + 近期状态段 -->
+      <section class="row">
+        <div class="card">
+          <h2 class="card-title">状态画像 <span class="muted">（各状态覆盖段的实测特征，语义与数据互证）</span></h2>
+          <div class="master-transition" id="master-stats"></div>
+          <p class="muted small">按"当月判定"对齐统计该状态覆盖交易日的实际年化收益与波动。<b style="color:#e2503f">危机</b>应显著为负且高波动、<b style="color:#8d99ae">平静</b>低收益最低波动、<b style="color:#e8a13a">履冰</b>最高波动的修复反弹、<b style="color:#1aa861">稳态</b>正收益低波动。</p>
+        </div>
+        <div class="card">
+          <h2 class="card-title">近期状态段 <span class="muted">（连续同状态区间 · 起止 · 区间涨跌）</span></h2>
+          <div class="master-transition" id="master-segments"></div>
+          <p class="muted small">月度状态按连续段合并；区间涨跌=该段首末交易日中证全指涨跌幅。状态判定含黏性规则（置信不足时沿用上月），跳变更少、段更可读。</p>
+        </div>
+      </section>
+
+      <!-- Row4: 转移矩阵 + 三轴罗盘 -->
+      <section class="row">
+        <div class="card">
+          <h2 class="card-title">状态转移矩阵 <span class="muted">（行→列，月度切换概率 %）</span></h2>
+          <div class="master-transition" id="master-transition"></div>
+          <p class="muted small">每行=从该状态出发，<b>下个月</b>落到各状态的概率；<b>对角=自持概率</b>。读法：先看自己所在行，对角外最大的格子就是最可能的迁移方向。口径：HMM 在日频拟合，月度矩阵=日度转移矩阵^21（21 交易日复利），已与实测月度切换频率对账一致。</p>
+        </div>
+        <div class="card master-radar-card">
+          <h2 class="card-title">三轴罗盘 <span class="muted">（HMM姿态 × 效率比 × 基本面）</span></h2>
+          <div class="master-radar-wrap"><canvas id="master-radar" height="190"></canvas></div>
+          <div id="master-axes" class="axis-chips"></div>
+          <p class="muted small">三个 0-100 维度，越外扩越偏走强：<b>HMM姿态</b>=后验加权的状态强弱；<b>效率比</b>=趋势强度；<b>基本面</b>=估值/宏观便宜度（&gt;50 偏多）。</p>
+        </div>
+      </section>
+
+      <!-- Row5: 研判逻辑说明 -->
+      <h2 class="section-h" id="master-method">研判逻辑 <small>（HMM 和 ER 到底怎么判出大势——三步）</small></h2>
+      <section class="card">
+        <div class="method-grid">
+          <div class="method-item">
+            <h3><span class="step-n">①</span> HMM 隐马尔可夫 · 市场处于哪个状态？</h3>
+            <p>把<b>中证全指</b>（全市场代表性优于沪深300）的日频特征 <b>[对数收益 · 20日波动 · ER]</b> 喂给 <b>4 态高斯 HMM</b>：假设市场在 4 个隐藏状态间按概率切换，每个状态有自己的收益/波动分布。命名=把各状态在<b>（收益,波动）平面</b>的位置与 4 个原型做最优一一匹配：<b style="color:#e2503f">危机</b>(低收益·高波动)、<b style="color:#e8a13a">履冰</b>(最高波动的修复反弹，收益可最高)、<b style="color:#8d99ae">平静</b>(低收益·最低波动)、<b style="color:#1aa861">稳态</b>(正收益·低波动的常态上行)。</p>
+            <p class="muted small">防前视：每月末<b>只用截至当天的历史</b>重拟合（walk-forward）；当月状态=月内全部交易日解码的<b>多数票</b>（比末日单点稳），置信不足时<b>沿用上月</b>（黏性先验，跳变约减半）；色带按<b>当月</b>判定对齐（nowcast）。各状态的实测年化/波动见「状态画像」卡——语义与数据互证。暖机期（首年）不判定。</p>
+          </div>
+          <div class="method-item">
+            <h3><span class="step-n">②</span> ER 效率比 (Kaufman) · 是趋势还是磨人？</h3>
+            <p class="formula">ER = |P<sub>t</sub> − P<sub>t−10</sub>| ÷ Σ|每日涨跌| ∈ [0, 1]</p>
+            <p>分子=10 天的<b>净位移</b>，分母=<b>路径总长</b>。一路直走 ER→1（趋势）；来回震荡 ER→0（磨人）。规则：<b>≥0.5 趋势 / ≤0.3 震荡</b>。它的职责是<b>给 HMM 把关</b>——状态看多但 ER 低，降级为震荡，不追假突破。</p>
+            <p class="muted small">局限：A股涨跌停日单日净位移≈路径长，ER 会虚高，故图上展示 21 日平滑值。</p>
+          </div>
+          <div class="method-item">
+            <h3><span class="step-n">③</span> 三轴融合 · 给出走强/震荡/走弱</h3>
+            <p class="formula">大势分 = 50 + 50 × ( 0.5×HMM姿态 + 0.2×ER确认 + 0.3×基本面 )</p>
+            <p><b>HMM姿态</b>=后验加权的进攻轴（危机 −1 ··· 稳态 +1）；<b>ER确认</b>=趋势强度顺着 HMM 方向加/减分；<b>基本面</b>=ERP、期限利差、金铜比、Shibor、期货净多比、期权PCR 六指标折成的估值轴。<b>≥60 走强 / ≤40 走弱 / 其间震荡</b>。<b>两条压制规则</b>：①走强必须有趋势确认（ER≥0.5），HMM 偏多但 ER 低=按震荡处理；②近 4 月状态切换≥2 次（危机↔履冰来回）=高波动震荡、regime 不确定，判为震荡——持续单一状态（真熊/真牛）不受影响。</p>
+            <p class="muted small">依据：Yang 2026（SSRN 6823998，4态高斯HMM）+ Kaufman 效率系数（仓库内置 vault/ 金工研报库）。历史状态为样本外判定，非全样本平滑。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Indicator cards (GuanLan 顶/底 双评分) — 技术/基本/情绪 三栏 -->
+      <h2 class="section-h" id="cards">市场顶/底信号 <small>（技术面 / 基本面 / 情绪资金 三面分开；顶=过热风险 / 底=超跌机会，全真实数据）</small></h2>
+      <div class="cat-block">
+        <div class="grid-label">技术面 <small>价量·趋势·波动</small><span id="cat-tech-score" class="cat-score"></span></div>
+        <section id="grid-tech" class="gl-grid"></section>
+      </div>
+      <div class="cat-block">
+        <div class="grid-label">基本面 <small>估值·利率·商品</small><span id="cat-fund-score" class="cat-score"></span></div>
+        <section id="grid-fund" class="gl-grid"></section>
+      </div>
+      <div class="cat-block">
+        <div class="grid-label">情绪资金 <small>杠杆·成交</small><span id="cat-senti-score" class="cat-score"></span></div>
+        <section id="grid-senti" class="gl-grid"></section>
+      </div>
+
+      <!-- Risk score & trend -->
+      <h2 class="section-h" id="trend">风险分数 &amp; 走势</h2>
+      <section class="card chart-card">
+        <div class="trend-tabs">
+          <div class="tab-group" id="index-tabs"></div>
+          <div class="tab-group" id="range-tabs">
+            <button data-range="60">60天</button>
+            <button data-range="120">120天</button>
+            <button data-range="250" class="active">250天</button>
+            <button data-range="0">全部</button>
+          </div>
+        </div>
+        <canvas id="trend-chart" height="105"></canvas>
+        <p class="muted small">红=顶部分（过热/见顶风险），绿=底部分（超跌/见底机会），右轴 0-100；折线=所选指数（左轴）。</p>
+      </section>
+
+      <!-- 因子看板已独立成页：/factors.html -->
+      <section class="card cta-card">
+        <h2 class="card-title">因子看板 <span class="muted">（动量/反转/小市值/价值/成长/质量/低波/红利…）</span></h2>
+        <p class="muted small">12 个真实风格指数代理因子的累积收益、近期轮动排行、全样本统计，已独立成页。</p>
+        <a class="cta-link" href="/factors.html">打开因子看板 ↗</a>
+      </section>
+
+      <!-- Indicator detail -->
+      <h2 class="section-h" id="detail">核心指标详解 <small>（数据来源 / 计算公式 / 评分规则）</small></h2>
+      <section id="detail-list" class="detail-list"></section>
+
+      <footer class="foot">
+        本平台数据与结论仅供量化研究参考，不构成任何投资建议。股市有风险，决策需谨慎。 © 2026 观澜 · 大势研判
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js?v=20260610-tmonthly"></script>
+  <script src="chat.js"></script>
+  <script src="refresh.js"></script>
+</body>
+</html>

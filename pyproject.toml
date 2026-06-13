@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guanlan-regime-factor"
+version = "1.0.0"
+description = "观澜 · 大势研判 + 因子研究助手 — a self-contained Claude Code agent + skills over real A-share ETF/index data"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "pyarrow>=12.0",
+    "tushare>=1.4",
+    "efinance>=0.5",
+    "akshare>=1.10",
+    "python-dotenv>=1.0",
+    "hmmlearn>=0.3",
+    "scikit-learn>=1.3",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "anthropic>=0.40",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+# Canonical dependency list is requirements.txt (pip install -r requirements.txt).
+# This pyproject mirrors it for metadata + the Python >=3.10 floor (PEP 604 unions).
+[tool.setuptools]
+packages = ["fof", "server"]
