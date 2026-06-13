@@ -52,6 +52,15 @@ a { color: inherit; text-decoration: none; }
 .topbar-title h1 { font-size: 22px; }
 .subtitle { color: var(--muted); font-size: 13px; }
 .topbar-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.refresh-progress { display: flex; align-items: center; gap: 8px; min-width: 200px; }
+.refresh-progress-bar { flex: 1; height: 6px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.refresh-progress-fill { height: 100%; width: 0%; background: var(--brand);
+  border-radius: 999px; transition: width .25s ease-out; }
+.refresh-progress-fill[data-kind="err"] { background: var(--bad); }
+#refresh-progress-label { white-space: nowrap; max-width: 280px; overflow: hidden;
+  text-overflow: ellipsis; }
+
 .refresh-box { display: flex; gap: 6px; align-items: center; }
 .refresh-box input { width: 190px; padding: 7px 11px; border: 1px solid var(--line);
   border-radius: 8px; font-size: 12.5px; outline: none; background: var(--panel); }

@@ -63,16 +63,22 @@ def run_refresh(token: str = "") -> dict:
 
 
 def _run_pipeline() -> dict:
+    """Non-streaming variant — kept for tests / programmatic use; the live UI uses
+    stream_refresh() (SSE) which surfaces per-stage progress."""
     from fof.config import DEFAULT_CONFIG
     from fof import report, sleeves
     from fof import data as datamod
 
     today = datetime.date.today().strftime("%Y-%m-%d")
-    # 1) ETF sleeves (regime + benchmark use these). bypass get_ohlcv 5-day stale tolerance.
     n_etf = datamod.refresh_tail(sleeves.all_codes(), today)
-    # 2) Stock indices used by master (HMM benchmark) + factors (12 factor indices + XSEC pool).
-    # Tail-only fetch — only [cache_last+1 .. today], 1 API call each instead of 6 years/19 indices.
-    from fof.config import FACTOR_DEFS, FACTOR_XSEC_POOL
+    n_idx = datamod.index_refresh_tail(_index_codes(), today)
+    cfg = replace(DEFAULT_CONFIG, asof=today)
+    dash = report.run_all(cfg, write=True)
+    return _build_result(today, n_etf, n_idx, dash)
+
+
+def _index_codes() -> list[str]:
+    from fof.config import DEFAULT_CONFIG, FACTOR_DEFS, FACTOR_XSEC_POOL
     indices = {DEFAULT_CONFIG.master_index, "000300.SH", "000001.SH"}
     for _k, _d, long_c, short_c, _c in FACTOR_DEFS:
         for code in (long_c, short_c):
@@ -80,17 +86,14 @@ def _run_pipeline() -> dict:
                 indices.add(code)
     for code in FACTOR_XSEC_POOL:
         indices.add(code)
-    n_idx = datamod.index_refresh_tail(list(indices), today)
+    return list(indices)
 
-    cfg = replace(DEFAULT_CONFIG, asof=today)
-    dash = report.run_all(cfg, write=True)
-    # FOF 已从 run_all 移除，dash 只剩 regime/master/factors；before_after.md 不再随刷新重写
-    # （它属于 ETF-FOF 证据链，要更新走 scripts/grid_search.py + 手动重生成）。
 
+def _build_result(today: str, n_etf: int, n_idx: int, dash: dict) -> dict:
+    """Compose the final response dict from a freshly-run dashboard."""
     reg = dash["regime"]
     master = dash.get("master", {}) or {}
     factors = dash.get("factors", {}) or {}
-    # 「最新数据 asof」= 实际数据中最新一根 K 线的日期，取三者最大值（不是 cfg.asof 这个日历日）。
     asof_dates = [d for d in [reg.get("asof"), master.get("asof"),
                               (factors.get("ranking") or {}).get("asof")] if d]
     data_asof = max(asof_dates) if asof_dates else today
@@ -103,11 +106,8 @@ def _run_pipeline() -> dict:
         except Exception:
             fac_alloc = {}
     return {
-        "ok": True,
-        "asof": data_asof,                     # actual latest data
-        "requested_asof": today,               # what we asked for
-        "n_etf_updated": int(n_etf),           # 0 on non-trading days / already-fresh
-        "n_idx_updated": int(n_idx),           # indices that gained new bars (tail-only)
+        "ok": True, "asof": data_asof, "requested_asof": today,
+        "n_etf_updated": int(n_etf), "n_idx_updated": int(n_idx),
         "composite_score": reg["composite_score"], "band": reg["band"],
         "regime_label": reg["regime_label"], "equity_exposure": reg["equity_exposure"],
         "regime_asof": reg.get("asof"), "master_asof": master.get("asof"),
@@ -117,3 +117,63 @@ def _run_pipeline() -> dict:
         "overweight": [f["display"] for f in (fac_alloc.get("overweight") or [])],
         "underweight": [f["display"] for f in (fac_alloc.get("underweight") or [])],
     }
+
+
+# --- progressed streaming version (SSE) ---
+import json as _json                                                          # noqa: E402
+
+
+def _sse(payload: dict) -> str:
+    return f"data: {_json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+def stream_refresh(token: str):
+    """Yield SSE events ({type, pct, label, ...}) at every pipeline stage so the dashboard
+    can render a progress bar. Final event is `done` carrying the same dict as run_refresh.
+    Token policy mirrors run_refresh: required per request, scrubbed in finally."""
+    token = (token or "").strip()
+    if not token:
+        yield _sse({"type": "error", "code": "token_required",
+                    "error": "请在输入框填写 Tushare token"})
+        return
+    prev = os.environ.get("TUSHARE_TOKEN")
+    os.environ["TUSHARE_TOKEN"] = token
+    try:
+        from fof.config import DEFAULT_CONFIG
+        from fof import report, sleeves, regime as regimemod, master as mastermod, \
+            factors as factorsmod, data as datamod
+
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        yield _sse({"type": "step", "pct": 5,  "label": "拉取 ETF 数据 (Tushare)…"})
+        n_etf = datamod.refresh_tail(sleeves.all_codes(), today)
+
+        yield _sse({"type": "step", "pct": 20, "label": f"已 {n_etf} ETF · 拉取指数数据…"})
+        n_idx = datamod.index_refresh_tail(_index_codes(), today)
+
+        cfg = replace(DEFAULT_CONFIG, asof=today)
+        yield _sse({"type": "step", "pct": 40, "label": f"已 {n_idx} 指数 · 计算风险研判…"})
+        reg = regimemod.build_regime_json(cfg)
+
+        yield _sse({"type": "step", "pct": 65, "label": "HMM 大势研判（walk-forward 重拟合）…"})
+        master = mastermod.build_master_json(cfg, reg)
+
+        yield _sse({"type": "step", "pct": 85, "label": "因子看板 · 月度 IC + 滚动 Sharpe…"})
+        factor_board = factorsmod.build_factor_board(cfg)
+
+        yield _sse({"type": "step", "pct": 95, "label": "写入 outputs/*.json…"})
+        dash = {"generated_at": cfg.asof, "config": cfg.to_dict(),
+                "regime": reg, "master": master, "factors": factor_board}
+        report._dump("regime.json", reg)
+        report._dump("master.json", master)
+        report._dump("factors.json", factor_board)
+        report._dump("dashboard.json", dash)
+
+        yield _sse({"type": "done", "pct": 100, "result": _build_result(today, n_etf, n_idx, dash)})
+    except Exception as ex:                                                   # noqa: BLE001
+        yield _sse({"type": "error",
+                    "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
+    finally:
+        if prev is None:
+            os.environ.pop("TUSHARE_TOKEN", None)
+        else:
+            os.environ["TUSHARE_TOKEN"] = prev

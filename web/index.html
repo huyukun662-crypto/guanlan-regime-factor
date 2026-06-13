@@ -43,6 +43,10 @@
             <button id="refresh-btn" type="button"
                     title="重拉数据并重算（每次必须填 Tushare token，不会保存）">⟳ 刷新数据</button>
           </div>
+          <div id="refresh-progress" class="refresh-progress" hidden>
+            <div class="refresh-progress-bar"><div id="refresh-bar-fill" class="refresh-progress-fill"></div></div>
+            <span id="refresh-progress-label" class="muted small">…</span>
+          </div>
           <button id="llm-settings-btn" class="pill pill-btn"
                   type="button" title="配置 AI 顾问的 LLM 厂商与 API key">⚙ AI 配置</button>
           <span id="health-pill" class="pill">连接中…</span>

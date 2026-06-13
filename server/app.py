@@ -68,16 +68,16 @@ async def post_chat(body: dict) -> StreamingResponse:
 
 
 @app.post("/api/refresh")
-async def post_refresh(body: dict) -> JSONResponse:
-    """Tushare-token required (from form input); full pipeline rerun for today. localhost only."""
+async def post_refresh(body: dict) -> StreamingResponse:
+    """Streaming refresh: SSE-formatted events ({type,pct,label,…}) at every pipeline stage so
+    the dashboard can render a progress bar. Final event is `done` carrying the result dict.
+    Tushare token is required (from form input). localhost only."""
     token = (body or {}).get("token", "")
-    try:
-        result = await run_in_threadpool(refreshmod.run_refresh, token)
-        return JSONResponse(result)
-    except refreshmod.TokenRequired as ex:
-        return JSONResponse({"ok": False, "error": str(ex), "code": "token_required"}, status_code=400)
-    except Exception as ex:                 # noqa: BLE001 — report, don't 500 the UI
-        return JSONResponse({"ok": False, "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
+    # The generator is sync (CPU+IO heavy); wrap each yield through the default thread pool
+    # by letting Starlette pull from it — uvicorn handles this OK for our single-user dashboard.
+    gen = refreshmod.stream_refresh(token)
+    return StreamingResponse(gen, media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @app.post("/api/llm_config")
