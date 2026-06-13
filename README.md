@@ -21,7 +21,7 @@
 
 ## 架构
 
-> 上手用法（装/配/跑/调 skill/常见问题）见 **[docs/usage.md](docs/usage.md)**；Agent + Skills 的分层逻辑见 **[docs/architecture.md](docs/architecture.md)**；**每个 skill 用什么话触发**见 **[docs/skills-triggers.md](docs/skills-triggers.md)**。
+> 上手用法（装/配/跑/调 skill/常见问题）见 **[docs/usage.md](docs/usage.md)**；Agent + Skills 的分层逻辑见 **[docs/architecture.md](docs/architecture.md)**；**每个 skill 用什么话触发**见 **[docs/skills-triggers.md](docs/skills-triggers.md)**；**在非 Claude Code 工具里用**（Cursor / Codex / Aider / Gemini CLI / Ollama / ChatGPT Web 等）见 **[docs/portable-agent.md](docs/portable-agent.md)**，纯 Python 不要 LLM 也行：`python scripts/guanlan_brief.py`。
 
 ```
 Tushare Pro ──▶ fof/ (Python 包) ──▶ outputs/*.json ──▶ web/ 仪表盘
