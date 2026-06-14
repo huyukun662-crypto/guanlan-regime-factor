@@ -1,9 +1,9 @@
-"""Tests for the factor board: OLS loadings, recent ranking, factor correlation."""
+﻿"""Tests for the factor board: OLS loadings, recent ranking, factor correlation."""
 
 import numpy as np
 import pandas as pd
 
-from fof.factors import loadings, recent_ranking, factor_correlation
+from fof.factors import loadings, recent_ranking, factor_correlation, factor_rotation_ic
 
 
 def _idx(n):
@@ -51,3 +51,18 @@ def test_factor_correlation_diag_and_symmetry():
     m = c["matrix"]
     assert abs(m[0][0] - 1.0) < 1e-9 and abs(m[1][1] - 1.0) < 1e-9
     assert abs(m[0][1] - m[1][0]) < 1e-9
+
+
+def test_factor_rotation_ic_empty_dataframe_returns_null_shape():
+    out = factor_rotation_ic(pd.DataFrame())
+    assert out["dates"] == []
+    assert out["ic"] == []
+    assert out["icir"] is None
+
+
+def test_factor_rotation_ic_range_index_returns_null_shape():
+    fac = pd.DataFrame({"momentum": [0.01, -0.02, 0.005], "value": [-0.01, 0.01, 0.0]})
+    out = factor_rotation_ic(fac)
+    assert out["dates"] == []
+    assert out["ic"] == []
+    assert out["icir"] is None

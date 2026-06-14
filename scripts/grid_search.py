@@ -18,6 +18,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from fof._compat import ensure_utf8_stdio
+ensure_utf8_stdio()
+
 from fof.config import DEFAULT_CONFIG
 from fof import engine
 from fof.metrics import compute_segment

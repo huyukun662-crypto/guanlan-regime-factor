@@ -195,6 +195,17 @@ def factor_rotation_ic(fac: pd.DataFrame) -> dict:
     个股因子 IC，而是**因子动量/轮动可预测性**——IC>0 说明本月赢家因子下月仍占优（动量有效），
     <0 说明反转。ICIR = mean(IC)/std(IC)，12 月滚动 ICIR 看稳定性。
     """
+    empty = {
+        "signal": "因子动量（当月收益排名 → 次月）",
+        "dates": [],
+        "ic": [],
+        "rolling_icir": [],
+        "icir": None,
+        "ic_mean": None,
+        "hit_rate": None,
+    }
+    if fac.empty or not isinstance(fac.index, pd.DatetimeIndex):
+        return empty
     m = (1.0 + fac.fillna(0.0)).resample("ME").prod() - 1.0   # 月度因子收益
     fwd = m.shift(-1)                                          # 次月收益
     ic_idx, ic_val = [], []

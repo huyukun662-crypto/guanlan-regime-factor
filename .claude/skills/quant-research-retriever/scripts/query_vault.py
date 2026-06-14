@@ -15,10 +15,15 @@ import argparse
 import json
 import os
 import re
+import sys
 from pathlib import Path
 
 # repo root = parents[4] of .claude/skills/quant-research-retriever/scripts/query_vault.py
-_REPO_VAULT = Path(__file__).resolve().parents[4] / "vault"
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+_REPO_VAULT = PROJECT_ROOT / "vault"
+sys.path.insert(0, str(PROJECT_ROOT))
+from fof._compat import ensure_utf8_stdio
+ensure_utf8_stdio()
 DEFAULT_VAULT = Path(os.environ.get("QUANT_VAULT_PATH") or _REPO_VAULT)
 PRIORITY_RANK = {"S": 3, "A": 2, "B": 1}
 

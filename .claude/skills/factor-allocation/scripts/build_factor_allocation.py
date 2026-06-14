@@ -16,6 +16,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from fof._compat import ensure_utf8_stdio
+ensure_utf8_stdio()
+
 from fof import report                       # noqa: E402  (复用 _dump 的 JSON 安全落盘)
 from fof.advice import factor_allocation_advice
 
