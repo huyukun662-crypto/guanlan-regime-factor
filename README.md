@@ -17,13 +17,15 @@
 | 单策略心电图、回撤吓人 | 大势 verdict + 因子配置建议给「进攻/中性/防御」姿态 + 风格倾斜，研究判断而非组合 |
 | 结果难以审阅 | GuanLan 风格风险仪表盘 + **内嵌实时 Claude 顾问**可质询 |
 
-> **完整前后效果对比**（八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）见 **[docs/before-after.md](docs/before-after.md)**；**投研流程提升 PDF 报告**见 **[docs/投研流程提升报告.pdf](docs/投研流程提升报告.pdf)**（`python scripts/make_impact_pdf.py` 可重新生成）。
+> **完整前后效果对比**（八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）见 **[docs/before-after.pdf](docs/before-after.pdf)**；**投研流程提升报告**见 **[docs/投研流程提升报告.pdf](docs/投研流程提升报告.pdf)**（`python scripts/make_impact_pdf.py` 可重新生成）。
 
 ---
 
 ## 架构
 
-> 上手用法（装/配/跑/调 skill/常见问题）见 **[docs/usage.md](docs/usage.md)**；Agent + Skills 的分层逻辑见 **[docs/architecture.md](docs/architecture.md)**；**每个 skill 用什么话触发**见 **[docs/skills-triggers.md](docs/skills-triggers.md)**；**在非 Claude Code 工具里用**（Cursor / Codex / Aider / Gemini CLI / Ollama / ChatGPT Web 等）见 **[docs/portable-agent.md](docs/portable-agent.md)**，纯 Python 不要 LLM 也行：`python scripts/guanlan_brief.py`。
+> **📑 所有文档均提供 PDF（`docs/*.pdf`，中文 reportlab 渲染，无外部字体依赖）**，`.md` 为源、`python scripts/md_to_pdf.py --all` 可重生成：
+> 上手用法 [usage.pdf](docs/usage.pdf) ｜ 分层逻辑 [architecture.pdf](docs/architecture.pdf) ｜ skill 触发 [skills-triggers.pdf](docs/skills-triggers.pdf) ｜ 跨工具用法 [portable-agent.pdf](docs/portable-agent.pdf) ｜ **agent 调用说明** [agent-使用说明.pdf](docs/agent-使用说明.pdf) ｜ **前后效果对比** [before-after.pdf](docs/before-after.pdf) ｜ **投研流程提升报告** [投研流程提升报告.pdf](docs/投研流程提升报告.pdf)。
+> （Markdown 源同名 `.md` 同目录可读。）
 
 ```
 Tushare Pro ──▶ fof/ (Python 包) ──▶ outputs/*.json ──▶ web/ 仪表盘
@@ -97,7 +99,7 @@ python -m pytest tests -q                             # 全量（需 TUSHARE_TOK
 - **研报库**：`quant-research-retriever` 默认读仓库内置 `vault/`；想换成自己的 Obsidian 库，设环境变量 `QUANT_VAULT_PATH` 或传 `--vault`。库缺失时优雅返回空引用（不崩）。
 - **🔐 密钥安全**：`.env` 已 gitignore，**绝不入库**。clone 者各自填自己的 token；任何曾在别处明文出现过的 token 请在 tushare.pro **及时轮换**。
 
-**调用 agent**：在 Claude Code 里打开本仓库 → 项目级 `.claude/agents/guanlan-analyst` 自动可用；说「跑一遍大势研判，该进攻还是防御？」即触发整条链路。完整调用说明（三种方式 + 常用问法 + 边界 + 故障排查）见 **[docs/agent-使用说明.md](docs/agent-使用说明.md)**。
+**调用 agent**：在 Claude Code 里打开本仓库 → 项目级 `.claude/agents/guanlan-analyst` 自动可用；说「跑一遍大势研判，该进攻还是防御？」即触发整条链路。完整调用说明（三种方式 + 常用问法 + 边界 + 故障排查）见 **[docs/agent-使用说明.pdf](docs/agent-使用说明.pdf)**。
 
 ---
 
