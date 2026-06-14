@@ -1,6 +1,6 @@
 # 观澜 · 大势研判 + 因子研究助手
 
-一个**自包含**的量化研究作业：用一个 Claude Code **agent**（`guanlan-analyst`）+ **4 个自定义 skills**，把"研报检索 → 风险 regime → 大势研判 → 因子研究"整条链路自动化，并用**真实 A 股 ETF / 指数数据**驱动可演示的仪表板。
+一个**自包含**的量化研究作业：用一个 Claude Code **agent**（`guanlan-analyst`）+ **5 个自定义 skills**，把"研报检索 → 风险 regime → 大势研判 → 因子研究"整条链路自动化，并用**真实 A 股 ETF / 指数数据**驱动可演示的仪表板。
 
 > **仪表板现状（两页）**：① **大势研判**（`index.html`）—— HMM 4 态隐马尔可夫 × Kaufman 效率比 × 基本面的综合市场状态研判 + 风险仪表盘 + 顶/底指标 + 风险走势 + AI 顾问；② **因子看板**（`factors.html`）—— 12 个真实风格指数代理因子的累积收益/轮动排行/全样本统计。两页侧栏互导。
 >
@@ -16,6 +16,8 @@
 | notebook 对数据、改一个参数就重写 | `regime-radar` + `regime-verdict` + `factor-research` 把指标/HMM大势/因子固化，一行命令全链路复跑 |
 | 单策略心电图、回撤吓人 | 大势 verdict + 因子配置建议给「进攻/中性/防御」姿态 + 风格倾斜，研究判断而非组合 |
 | 结果难以审阅 | GuanLan 风格风险仪表盘 + **内嵌实时 Claude 顾问**可质询 |
+
+> **完整前后效果对比**（八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）见 **[docs/before-after.md](docs/before-after.md)**。
 
 ---
 
@@ -116,7 +118,7 @@ server/         FastAPI（仪表盘 JSON + 静态站点 + 流式 /api/chat）
 web/            GuanLan 风格仪表盘（index.html, factors.html, app.js, chat.js, styles.css）
 scripts/        run_pipeline.py, open_dashboard.py
 outputs/        仪表盘读取的 JSON（入库以保证可移植）
-docs/           usage.md, architecture.md, skills-triggers.md
+docs/           usage.md, architecture.md, skills-triggers.md, portable-agent.md, before-after.md
 tests/          防前视 / 指标 / 配置建议映射 单测
 vault/          内置研报库（236 篇金工研报+概念，retriever 默认读它）
 ```
