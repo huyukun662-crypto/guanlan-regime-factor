@@ -17,7 +17,7 @@
 | 单策略心电图、回撤吓人 | 大势 verdict + 因子配置建议给「进攻/中性/防御」姿态 + 风格倾斜，研究判断而非组合 |
 | 结果难以审阅 | GuanLan 风格风险仪表盘 + **内嵌实时 Claude 顾问**可质询 |
 
-> **完整前后效果对比**（八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）见 **[docs/before-after.md](docs/before-after.md)**。
+> **完整前后效果对比**（八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）见 **[docs/before-after.md](docs/before-after.md)**；**投研流程提升 PDF 报告**见 **[docs/投研流程提升报告.pdf](docs/投研流程提升报告.pdf)**（`python scripts/make_impact_pdf.py` 可重新生成）。
 
 ---
 
