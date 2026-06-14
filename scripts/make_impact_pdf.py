@@ -239,8 +239,23 @@ def build(path: str) -> None:
     e.append(P("• <b>诚实标注弱信号/局限</b>：因子动量弱、ER 涨跌停虚高、研判非交易信号——都在输出里写明。", "bullet"))
     e.append(P("• <b>无密钥也能跑</b>：整条 pipeline + 仪表板不需要任何 LLM key；agent 本身不调 LLM API。", "bullet"))
 
-    # ===== 八、实测证据 =====
-    e.append(P("八、实测证据（可复现）", "h2"))
+    # ===== 八、为什么无密钥也能跑 =====
+    e.append(P("八、为什么无密钥也能跑（离线可复现的底气）", "h2"))
+    e.append(P("投研结论的产生<b>不依赖任何外部付费服务</b>。系统有<b>两种 key、三套降级</b>，且核心计算全在本地：", "body"))
+    e.append(P("• <b>TUSHARE_TOKEN（数据 key）</b>：仅「拉新数据 / 刷新」时需要。仓库已<b>入库 5 份 "
+               "outputs/*.json 快照</b>，所以看仪表板（/api/dashboard 直接读盘）、跑 guanlan_brief.py 都"
+               "<b>无需 token</b>；只有要更新到今天才输入（每次必填、不存盘）。", "bullet"))
+    e.append(P("• <b>LLM key（AI 顾问）</b>：仅仪表板那个对话框需要。没配 key 时降级为 regime.json 里"
+               "<b>预先算好的 advice_baseline 基线建议</b>，不报错、不空白。可接任意厂商（Anthropic/OpenAI/"
+               "DeepSeek/Kimi/Zhipu/通义/Ollama）。", "bullet"))
+    e.append(P("• <b>核心计算无 LLM</b>：HMM / Kaufman 效率比 / 因子 IC 都是本地 numpy/pandas/hmmlearn "
+               "算出来的——<b>agent / skill / pipeline 从不调用任何大模型 API</b>，大模型只是仪表板上一个"
+               "可选的问答皮肤。", "bullet"))
+    e.append(P("<b>一句话</b>：算靠本地 Python（无 key）、取数用 Tushare（仅刷新需 key）、问答用 LLM"
+               "（仅聊天需 key）；仓库自带算好的 JSON → <b>clone 即看、即复现</b>，同输入 SHA256 还一致。", "body"))
+
+    # ===== 九、实测证据 =====
+    e.append(P("九、实测证据（可复现）", "h2"))
     e.append(P("• <b>确定性</b>：两次离线简报 SHA256 完全相同（5270A5F4…），run1 1.00s / run2 0.17s。", "kpi"))
     e.append(P("• <b>溯源</b>：query_vault &quot;HMM regime&quot; --top 5 返回 5 条带路径引用"
                "（含 S 级研报 + 2 个 topic 枢纽）。", "kpi"))
@@ -248,16 +263,16 @@ def build(path: str) -> None:
     e.append(P("• <b>产物规模</b>：5 份确定性 JSON（dashboard 470KB / factors 192KB / regime 151KB / "
                "master 74KB / factor_allocation 2.8KB）。", "kpi"))
 
-    # ===== 九、诚实局限 =====
-    e.append(P("九、诚实局限（不夸大）", "h2"))
+    # ===== 十、诚实局限 =====
+    e.append(P("十、诚实局限（不夸大）", "h2"))
     e.append(_band(
         "• 本文衡量的是<b>投研流程的效率与可信度</b>，不是 PnL 提升——本项目交付研判读数、不构建组合、未回测。<br/>"
         "• 因子动量很弱（IC≈0.04 / ICIR≈0.09 / 胜率≈55%）→ 风格 tilt 仅<b>弱倾斜</b>，别据此重仓押注。<br/>"
         "• 大势是<b>研究读数、非交易信号</b>；ER 在涨跌停日虚高；历史状态色带为 walk-forward 样本外判定，非全样本平滑。<br/>"
         "• 仅供量化研究参考，不构成投资建议。", S, BANDB, colors.HexColor("#f0c8c0")))
 
-    # ===== 十、复现 =====
-    e.append(P("十、如何复现这份对比", "h2"))
+    # ===== 十一、复现 =====
+    e.append(P("十一、如何复现这份对比", "h2"))
     e.append(P("python scripts/guanlan_brief.py            # 离线研判简报（跑两次比 SHA256 一致）<br/>"
                "python -m pytest tests -q                  # 单测（含防前视断言）<br/>"
                "python .claude/skills/quant-research-retriever/scripts/query_vault.py &quot;HMM regime&quot; --top 5<br/>"

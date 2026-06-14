@@ -97,7 +97,7 @@ python -m pytest tests -q                             # 全量（需 TUSHARE_TOK
 - **研报库**：`quant-research-retriever` 默认读仓库内置 `vault/`；想换成自己的 Obsidian 库，设环境变量 `QUANT_VAULT_PATH` 或传 `--vault`。库缺失时优雅返回空引用（不崩）。
 - **🔐 密钥安全**：`.env` 已 gitignore，**绝不入库**。clone 者各自填自己的 token；任何曾在别处明文出现过的 token 请在 tushare.pro **及时轮换**。
 
-**调用 agent**：在 Claude Code 里打开本仓库 → 项目级 `.claude/agents/guanlan-analyst` 自动可用；说「跑一遍大势研判，该进攻还是防御？」即触发整条链路。
+**调用 agent**：在 Claude Code 里打开本仓库 → 项目级 `.claude/agents/guanlan-analyst` 自动可用；说「跑一遍大势研判，该进攻还是防御？」即触发整条链路。完整调用说明（三种方式 + 常用问法 + 边界 + 故障排查）见 **[docs/agent-使用说明.md](docs/agent-使用说明.md)**。
 
 ---
 
