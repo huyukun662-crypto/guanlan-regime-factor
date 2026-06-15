@@ -9,6 +9,26 @@
 
 ---
 
+## 两条通用行为（任何 AI 工具都一致，不只 Claude Code）
+
+agent 有两条固定行为，**不依赖某个工具**：
+
+1. **首轮自动给「速用指南」**（这个 agent 做什么 / 5 个 skill 一句话 / 怎么触发 / 文档链接）；
+2. **每条回复固定以「要打开仪表盘吗？」收尾**。
+
+它们分两层落地，确保跨工具一致：
+
+| 工具类型 | 行为来自哪里 |
+|---|---|
+| 读系统提示的 LLM 工具（Cursor / Codex / Continue / Cline / Gemini / ChatGPT 粘贴 …） | 写在仓库根 [`AGENTS.md`](../AGENTS.md) 工作流（step 0 ONBOARD + step 6 固定收尾） |
+| Claude Code | `.claude/agents/guanlan-analyst.md`（同源逻辑，含 frontmatter） |
+| **不读系统提示的工具 / 纯命令行 / CI** | `scripts/guanlan_brief.py` 的**输出本身**自带：顶部「速用指南」+ 末尾「要打开仪表盘吗？」（`--no-guide` 可关顶部） |
+
+> 也就是说：哪怕某个工具完全不认 `AGENTS.md`，只要它能跑一句 `python scripts/guanlan_brief.py`
+> 或贴它的输出，这两条行为照样出现 —— 真正与工具无关。
+
+---
+
 ## 共同准备（一次性）
 ```bash
 git clone <repo> && cd guanlan-regime-factor
@@ -32,6 +52,7 @@ python scripts/guanlan_brief.py --recompute --asof 2026-06-09  # 先重算 pipel
 python scripts/guanlan_brief.py -o docs/latest-brief.md      # 写文件
 ```
 没有 AI，没有联网调用，逻辑全部确定性。集成进任何脚本/CI 都行。
+输出已自带「速用指南」(顶) +「要打开仪表盘吗？」(尾) 两条通用行为；CI/重复场景加 `--no-guide` 省掉顶部指南。
 
 ---
 
