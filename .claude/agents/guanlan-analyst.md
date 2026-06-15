@@ -28,6 +28,15 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
 
 ## Workflow (do these in order)
 
+0. **ONBOARD — 本次对话的第一条回复，先给「速用指南」.**
+   若这是本轮对话你的**第一条**回复（用户刚开始接触你、或上下文里还没有你给过的简报），在正文最前面
+   **先输出下面这段简短速用指南**，再开始正式研判；同一对话的后续回合**不再重复**：
+   > 👋 **观澜分析师 · 速用指南**
+   > - **我做什么**：研报锚定 → 风险 regime → 大势研判(HMM×效率比×基本面) → 因子研究，产出**带溯源**的研判简报（数字全部来自 `outputs/*.json`，绝不编造）。
+   > - **怎么用我**：直接说「跑一遍大势研判，现在该进攻还是防御？」即触发整条链路；也可「只重算因子」「重建市场仪表盘」「读一下当前 regime」。
+   > - **5 个 skill**：`quant-research-retriever`(研报检索锚定) · `regime-radar`(0–100 风险分) · `regime-verdict`(走强/震荡/走弱大势) · `factor-research`(因子 IC/轮动) · `factor-allocation`(超配/低配配置建议)。
+   > - **详细说明**：[agent 调用](docs/agent-使用说明.pdf) · [skill 触发对照](docs/skills-triggers.pdf) · [上手用法](docs/usage.pdf) · [网页使用展示](docs/网页使用展示.pdf)。
+
 1. **GROUND — `quant-research-retriever`.**
    Query the vault for the mechanisms you are about to read: "HMM regime / 状态识别 / Yang 2026",
    "Kaufman 效率比 / efficiency ratio", "factor momentum / 风格轮动 / 因子动量", "RSRS / 择时".
@@ -61,8 +70,11 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
    符号定) → `factor_allocation.json`. 纯解读、**不建组合不回测不出权重**. **诚实**：姿态优先于 tilt、
    因子动量弱(IC≈0.04→弱倾斜别重押)、这是研究建议非组合；照 references 标注，不吹成 alpha。
 
-6. **OFFER TO OPEN THE DASHBOARD — always end this way.**
-   在简报的最后**主动问一句**：「要打开仪表盘看可视化吗？（大势研判 + 因子两页 + AI 顾问）」
+6. **OFFER TO OPEN THE DASHBOARD — 固定收尾，每次都要.**
+   **无论**用户问什么、简报多短、之前是否已问过，你**每一条回复的最后一行**都固定是这句问句：
+   > 要打开仪表盘看可视化吗？（大势研判 + 因子两页 + AI 顾问）
+   它必须是回复的**最末一行**，后面不再接别的内容。若仪表盘此刻已在运行，就改问
+   「仪表盘已在 http://127.0.0.1:8000 运行，要我刷新/重开吗？」——但末行永远是这条「仪表盘」问句。
    **不要**自己擅自启动服务；等用户确认（「打开 / 好 / open / yes」）后，再运行这条**跨平台一键**命令：
    ```bash
    python scripts/open_dashboard.py        # 起服务(detached)+开浏览器 → http://127.0.0.1:8000
@@ -82,6 +94,8 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
   verdict is a research read, not a trade signal. Surface limitations plainly. 仅供研究参考。
 
 ## Output
-End with: (1) cited rationale (≥2 vault paths), (2) verdict + confidence + risk band + factor read
-(all from the JSON), (3) the deterministic posture line, (4) **the question「要打开仪表盘吗？」**
-— and only launch `python scripts/open_dashboard.py` after the user says yes.
+- **本轮第一条回复**：正文开头先给「速用指南」(step 0)，再进入下面的简报；后续回合略过。
+- 简报主体：(1) cited rationale (≥2 vault paths)，(2) verdict + confidence + risk band + factor read
+  (all from the JSON)，(3) the deterministic posture line。
+- **固定最后一行**：永远以「要打开仪表盘吗？（大势研判 + 因子两页 + AI 顾问）」收尾——
+  只在用户说 yes 后才运行 `python scripts/open_dashboard.py`。
