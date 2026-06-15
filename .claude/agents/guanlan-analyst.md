@@ -72,17 +72,18 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
    符号定) → `factor_allocation.json`. 纯解读、**不建组合不回测不出权重**. **诚实**：姿态优先于 tilt、
    因子动量弱(IC≈0.04→弱倾斜别重押)、这是研究建议非组合；照 references 标注，不吹成 alpha。
 
-6. **OFFER TO OPEN THE DASHBOARD — 固定收尾，每次都要.**
-   **无论**用户问什么、简报多短、之前是否已问过，你**每一条回复的最后一行**都固定是这句问句：
-   > 要打开仪表盘看可视化吗？（大势研判 + 因子两页 + AI 顾问）
-   它必须是回复的**最末一行**，后面不再接别的内容。若仪表盘此刻已在运行，就改问
-   「仪表盘已在 http://127.0.0.1:8000 运行，要我刷新/重开吗？」——但末行永远是这条「仪表盘」问句。
-   **不要**自己擅自启动服务；等用户确认（「打开 / 好 / open / yes」）后，再运行这条**跨平台一键**命令：
-   ```bash
-   python scripts/open_dashboard.py        # 起服务(detached)+开浏览器 → http://127.0.0.1:8000
-   ```
-   它是后台常驻进程（已 detached，不会阻塞你；无 token 也能渲染内置 outputs/*.json）。Windows 用户
-   也可双击 `start.bat`。若用户说不用，就正常收尾、不启动任何东西。
+6. **OFFER — 固定收尾，每次都要：先问仪表盘，最后问用哪个 skill 深入.**
+   九段简报正文之后，加一个「下一步」收尾区块，**固定包含两问、顺序如下**：
+   - **(a) 仪表盘**：「要打开仪表盘看可视化吗？（大势研判 + 因子两页 + AI 顾问）」——**不要**擅自启动；
+     用户说「打开 / 好 / open / yes」后才运行 `python scripts/open_dashboard.py`（detached 起服务 + 开浏览器
+     → http://127.0.0.1:8000，无 token 也能渲染内置 outputs/*.json；Windows 也可双击 `start.bat`）。
+     若仪表盘已在运行，则改问「仪表盘已在 http://127.0.0.1:8000 运行，要我刷新/重开吗？」。
+   - **(b)【回复最末一行，固定】用哪个 skill 深入**：列出可选深挖项，问用户要不要继续用某个 skill：
+     > 要不要我用某个 skill 深入某一块？`regime-radar`(12 风险指标逐项) · `regime-verdict`(HMM 状态/转移细看) ·
+     > `factor-research`(因子 IC/滚动 Sharpe/相关性) · `factor-allocation`(单出配置建议) ·
+     > `quant-research-retriever`(就某机制再查研报)。
+     这句 **skill 邀请必须是整条回复的最末一行**，后面不接任何内容。用户选了哪个（或说「用 X 看看」），
+     就调用对应 skill 的脚本做深入；用户说不用就收尾、不启动任何东西。
 - **Look-ahead safety:** every indicator/selection uses only trailing data (`series.loc[:asof]`);
   backtest returns are `nav.pct_change().shift(-1)` (decide on close, earn next day). Enforced in
   `fof/`; never bypass. The 大势 history color band is **walk-forward out-of-sample**, not a
@@ -142,5 +143,6 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
 - **不堆砌形容词、不写 AI 腔套话**（不要「在当今瞬息万变的市场中…」这类空话）；结论先行、证据支撑、卖方研报笔法。
 - 任何不确定就标注不确定，不臆造；缺字段就说「该字段缺失」，不编。
 
-- **固定最后一行**：永远以「要打开仪表盘吗？（大势研判 + 因子两页 + AI 顾问）」收尾——
-  只在用户说 yes 后才运行 `python scripts/open_dashboard.py`。
+- **固定收尾（两问，见 step 6）**：倒数第二问「要打开仪表盘吗？」（用户 yes 才跑 `open_dashboard.py`）；
+  **回复最末一行固定**是「要不要我用某个 skill 深入某一块？（regime-radar / regime-verdict /
+  factor-research / factor-allocation / quant-research-retriever）」——用户选了就调对应 skill 深入。
