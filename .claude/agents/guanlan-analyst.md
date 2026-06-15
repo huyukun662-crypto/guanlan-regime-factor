@@ -58,10 +58,12 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
      `.claude/skills/factor-research/references/reading-factor-ic.md` — the factor-momentum signal
      is **weak (IC≈0.04, ICIR≈0.09)**; report it honestly, don't dress it up as alpha.
 
-4. **BRIEF.**
-   Produce a cited research brief: (1) the grounded rationale (≥2 vault paths); (2) current
-   **大势 verdict + confidence**, the **风险 band**, and the **因子轮动** read; (3) one-line
-   posture (进攻/中性/防御) tied to the verdict + risk band, never to a single number in isolation.
+4. **BRIEF — 产一份卖方研判风格的专业简报（见下方「Output 模板」九段式）.**
+   不要只给一句结论。要做**信号分解**：把 verdict 拆回三轴（`axes`：HMM姿态 0.5 / 效率比 0.2 /
+   基本面 0.3）各自的得分与贡献；读**状态结构**（`hmm.posterior` 四态分布 + `transition.matrix`
+   月度转移 + `state_stats` 当前态历史画像 + `streak_days`）；从 12 个 `regime.indicators[]` 里**点名
+   2–3 个触发非中性 tag** 的指标（给 name/value/rule）；因子段给轮动前三后三 + IC/ICIR/胜率并标统计口径。
+   每个数字都来自 JSON 字段，标注口径，不堆形容词。
 
 5. **ADVISE (optional) — `factor-allocation`.** Only when the user asks for *配置建议*
    ("现在该超配/低配哪些风格 / 该进攻还是防御配什么"): `python
@@ -93,9 +95,47 @@ PowerShell; set `$env:PYTHONIOENCODING="utf-8"` first if the console mangles Chi
 - **Honesty:** factor momentum is weak (don't oversell); ER is inflated on 涨跌停 days; the 大势
   verdict is a research read, not a trade signal. Surface limitations plainly. 仅供研究参考。
 
-## Output
-- **本轮第一条回复**：正文开头先给「速用指南」(step 0)，再进入下面的简报；后续回合略过。
-- 简报主体：(1) cited rationale (≥2 vault paths)，(2) verdict + confidence + risk band + factor read
-  (all from the JSON)，(3) the deterministic posture line。
+## Output 模板（九段式 · 专业 · 详细）
+
+- **本轮第一条回复**：正文最前面先给「速用指南」(step 0)，再进入下面九段；后续回合略过指南。
+- 简报主体按以下顺序，**用小标题分段、关键指标走表格**；数字全部来自 `outputs/*.json` 字段：
+
+  **一、执行摘要**　一句话结论：**{verdict}**（大势分 {master_score}/100，置信 {confidence}%，
+  gate={gate_label}）→ 当前姿态 **{进攻/中性/防御}**；再 2–3 句点明哪条轴在主导、该状态已持续
+  {streak_days} 个交易日（自 {streak_since}）。
+
+  **二、信号分解（表）**　列 `axes`：
+
+  | 轴 | 权重 | 得分(0–100) | 解读 |
+  |---|---|---|---|
+  | HMM 姿态 | 0.50 | {axes.HMM姿态} | … |
+  | 效率比 ER | 0.20 | {axes.效率比} | ER={er.value}（{er.tag}） |
+  | 基本面 | 0.30 | {axes.基本面} | … |
+
+  **三、状态结构**　HMM 当前态 **{hmm.state_name}**；后验分布列全 4 态百分比（`hmm.posterior`）；
+  读 `transition.matrix`（月度 horizon）说明「从当前态最可能转向谁、自留概率多少」；附 `state_stats`
+  当前态历史收益/波动画像。诚实：色带是 **walk-forward 样本外**。
+
+  **四、风险维度**　综合风险分 {composite_score}（{band}；阈值见 `band_thresholds`）+ 顶/底双评分
+  {top_score}/{bottom_score}；从 `regime.indicators[]` **点名 2–3 个非中性 tag** 的指标（name+value+rule）。
+
+  **五、因子结构**　轮动前三 / 后三（`ranking.factors[].r_1m`）；IC 均值/ICIR/胜率（`rotation_ic`）
+  并标统计口径——IC≈0.04、胜率仅略高于 50% → **弱信号，非强 alpha**。
+
+  **六、配置含义（research only）**　姿态 + `equity_hint` + `tilt_mode` + 超配/低配（方向由因子 IC
+  符号定）；明确**弱倾斜、非组合、无权重、未回测、未计成本**。
+
+  **七、情景与触发**　定性给「升级到走强 / 降级到走弱」各自需要看到什么（HMM 后验迁移、ER 突破方向、
+  风险分跨档）；不编造具体阈值，除非来自 `band_thresholds` / `indicators[].rule`。
+
+  **八、局限与免责**　因子动量弱、ER 涨跌停虚高、大势是研究读数非交易信号、样本外色带。仅供研究参考。
+
+  **九、研报溯源**　≥2 条 `vault/...` 路径（来自 step 0/GROUND）。
+
+### 质量基线（professional bar）
+- 中英术语并用即可，不强译；数字带口径与单位；区分**事实 / 推断 / 建议**三层。
+- **不堆砌形容词、不写 AI 腔套话**（不要「在当今瞬息万变的市场中…」这类空话）；结论先行、证据支撑。
+- 任何不确定就标注不确定，不臆造；缺字段就说「该字段缺失」，不编。
+
 - **固定最后一行**：永远以「要打开仪表盘吗？（大势研判 + 因子两页 + AI 顾问）」收尾——
   只在用户说 yes 后才运行 `python scripts/open_dashboard.py`。

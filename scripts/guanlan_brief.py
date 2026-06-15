@@ -96,6 +96,48 @@ def _factor_advice() -> dict:
         return {}
 
 
+def _structure_sections(master: dict, reg: dict) -> str:
+    """信号分解(三轴) + 状态结构(后验/转移) + 触发的非中性风险指标 —— 让简报更专业、可追溯。"""
+    out: list[str] = []
+    axes = master.get("axes") or {}
+    if axes:
+        rows = [("HMM 姿态", "0.50", axes.get("HMM姿态")),
+                ("效率比 ER", "0.20", axes.get("效率比")),
+                ("基本面", "0.30", axes.get("基本面"))]
+        out.append("## 信号分解（三轴 → 综合分）\n\n| 轴 | 权重 | 得分(0–100) |\n|---|---|---|\n"
+                   + "\n".join(f"| {n} | {w} | {v if v is not None else '—'} |" for n, w, v in rows))
+    hmm = master.get("hmm") or {}
+    if hmm.get("state_name"):
+        post = hmm.get("posterior") or {}
+        post_str = "、".join(f"{k} {round(v*100)}%" for k, v in
+                             sorted(post.items(), key=lambda kv: -kv[1])) if post else "—"
+        trans = master.get("transition") or {}
+        nxt = ""
+        try:
+            mat = trans.get("matrix") or {}
+            cur = hmm.get("state_name")
+            row = mat.get(cur) if isinstance(mat, dict) else None    # matrix[from][to] = prob
+            if isinstance(row, dict) and row:
+                self_p = row.get(cur, 0.0)
+                others = {k: v for k, v in row.items() if k != cur}
+                if others:
+                    nx = max(others, key=others.get)
+                    nxt = (f"\n- **月度转移**（{trans.get('horizon','月度')[:2]}）：自留 "
+                           f"{round(self_p*100)}%；最可能转向 **{nx}** {round(others[nx]*100)}%")
+        except Exception:
+            nxt = ""
+        out.append(f"## 状态结构（HMM · walk-forward 样本外）\n"
+                   f"- **当前态**：{hmm.get('state_name')}（已持续 {master.get('streak_days','—')} 交易日）\n"
+                   f"- **后验分布**：{post_str}{nxt}")
+    inds = [d for d in (reg.get("indicators") or [])
+            if d.get("available") and d.get("tag") and d.get("tag") != "中性"]
+    if inds:
+        lines = "\n".join(f"- **{d.get('name')}** = {d.get('value')} → {d.get('tag')}"
+                          f"（{d.get('rule', '')}）" for d in inds[:3])
+        out.append(f"## 触发信号（非中性指标 · top {min(3, len(inds))}）\n{lines}")
+    return ("\n\n".join(out) + "\n\n") if out else ""
+
+
 def build_brief(asof: str | None = None, show_guide: bool = True) -> str:
     reg = _load("regime.json")
     master = _load("master.json")
@@ -124,6 +166,13 @@ def build_brief(asof: str | None = None, show_guide: bool = True) -> str:
                f"胜率 {round((ic.get('hit_rate') or 0)*100)}%"
                if ic else "（无 factors.json）")
 
+    rk = ((factors.get("ranking") or {}).get("factors")) or []
+    def _fmt(fs: list) -> str:
+        return "、".join(f"{x.get('display','?')}({(x.get('r_1m') or 0):+.1%})" for x in fs) or "—"
+    top3 = _fmt(sorted(rk, key=lambda x: -(x.get("r_1m") or 0))[:3]) if rk else "—"
+    bot3 = _fmt(sorted(rk, key=lambda x: (x.get("r_1m") or 0))[:3]) if rk else "—"
+    struct_md = _structure_sections(master, reg)
+
     cites = _vault_citations(["HMM regime 状态", "Kaufman efficiency ratio 效率比",
                               "factor momentum 因子动量", "RSRS 择时"])
     def _rel(p: str) -> str:
@@ -147,8 +196,10 @@ def build_brief(asof: str | None = None, show_guide: bool = True) -> str:
 - **HMM 状态**：{master.get('hmm',{}).get('state_name','—')}（已持续 {master.get('streak_days','—')} 交易日）
 - **效率比 ER**：{(master.get('er') or {}).get('value','—')} —— {(master.get('er') or {}).get('tag','—')}
 
-## 因子轮动
-{ic_line}
+{struct_md}## 因子轮动
+- {ic_line}
+- **近 1 月居前**：{top3}
+- **近 1 月居后**：{bot3}
 
 ## 配置建议（research only · 非组合）
 - **总仓位姿态**：**{posture}**（{advice.get('equity_hint','—')}）
