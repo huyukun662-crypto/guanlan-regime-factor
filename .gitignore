@@ -18,6 +18,9 @@ outputs/*.log
 # Scratch / temp
 temp/
 
+# Build artifact: the reusable package is produced via `git archive`, not committed
+*.zip
+
 # Python
 __pycache__/
 *.py[cod]

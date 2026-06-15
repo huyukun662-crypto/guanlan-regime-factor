@@ -5,7 +5,7 @@
     python scripts/md_to_pdf.py --all                         # 转 docs/ 下所有 .md
 
 支持的 Markdown 子集（覆盖本仓库文档）：# / ## / ### 标题、段落、- / * / 数字列表、
-| 表格 |、``` 代码块、> 引用、--- 分割线、**粗体**、`行内代码`、[文字](链接)。
+| 表格 |、``` 代码块、> 引用、--- 分割线、**粗体**、`行内代码`、[文字](链接)、![图说](图片路径)。
 """
 
 from __future__ import annotations
@@ -22,7 +22,8 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-from reportlab.platypus import (HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table,
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import (HRFlowable, Image, Paragraph, SimpleDocTemplate, Spacer, Table,
                                 TableStyle)
 
 CJK = "STSong-Light"
@@ -106,6 +107,30 @@ def _flush_code(lines: list, S, story, W):
     story.append(Spacer(1, 6))
 
 
+def _image(path: Path, alt: str, S, story, W, maxH):
+    """Render ![alt](path) scaled to fit both content width and page height (Images can't split),
+    with an optional centered caption."""
+    if not path.exists():
+        story.append(Paragraph(_inline(f"[缺图: {path.name}]"), S["quote"])); return
+    iw, ih = ImageReader(str(path)).getSize()
+    scale = min(W / float(iw), maxH / float(ih))   # fit-inside; tall screenshots get narrower
+    w, h = float(iw) * scale, float(ih) * scale
+    img = Image(str(path), width=w, height=h)
+    img.hAlign = "CENTER"
+    tb = Table([[img]], colWidths=[w])      # boxed frame hugs the image so it reads as a figure
+    tb.hAlign = "CENTER"
+    tb.setStyle(TableStyle([("BOX", (0, 0), (-1, -1), 0.6, LINE),
+                            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 3), ("RIGHTPADDING", (0, 0), (-1, -1), 3)]))
+    story.append(tb)
+    if alt.strip():
+        cap = ParagraphStyle(name="cap", fontName=CJK, fontSize=8.4, leading=11,
+                             textColor=MUTED, alignment=1, spaceBefore=3, spaceAfter=8)
+        story.append(Paragraph(_inline(f"图：{alt.strip()}"), cap))
+    else:
+        story.append(Spacer(1, 8))
+
+
 def _footer(canvas, doc):
     canvas.saveState()
     canvas.setFont(CJK, 8)
@@ -147,6 +172,11 @@ def convert(md_path: Path, pdf_path: Path) -> None:
         s = ln.strip()
         if not s:
             story.append(Spacer(1, 4)); continue
+        m_img = re.match(r"^!\[([^\]]*)\]\(([^)]+?)\)\s*$", s)
+        if m_img:
+            alt, rel = m_img.group(1), m_img.group(2)
+            img_path = Path(rel) if Path(rel).is_absolute() else (md_path.parent / rel)
+            _image(img_path, alt, S, story, W, doc.height - 24); continue
         if s.startswith("### "):
             story.append(Paragraph(_inline(s[4:]), S["h3"]))
         elif s.startswith("## "):

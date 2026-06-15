@@ -17,14 +17,17 @@
 | 单策略心电图、回撤吓人 | 大势 verdict + 因子配置建议给「进攻/中性/防御」姿态 + 风格倾斜，研究判断而非组合 |
 | 结果难以审阅 | GuanLan 风格风险仪表盘 + **内嵌实时 Claude 顾问**可质询 |
 
-> **完整前后效果对比**（八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）见 **[docs/before-after.pdf](docs/before-after.pdf)**；**投研流程提升报告**见 **[docs/投研流程提升报告.pdf](docs/投研流程提升报告.pdf)**（`python scripts/make_impact_pdf.py` 可重新生成）。
+> **三份核心交付文档**：① **使用说明** [docs/usage.pdf](docs/usage.pdf)（+ agent 调用 [docs/agent-使用说明.pdf](docs/agent-使用说明.pdf)）；
+> ② **提升对比**（agent/skills 对策略研究的实际帮助，八维实测：耗时 / 可溯源 / 防前视 / 可复现 / 可验证 …）
+> [docs/before-after.pdf](docs/before-after.pdf) + [docs/投研流程提升报告.pdf](docs/投研流程提升报告.pdf)；
+> ③ **网页使用展示**（两页仪表板真实截图 + 当前真实读数）[docs/网页使用展示.pdf](docs/网页使用展示.pdf)。
 
 ---
 
 ## 架构
 
 > **📑 所有文档均提供 PDF（`docs/*.pdf`，中文 reportlab 渲染，无外部字体依赖）**，`.md` 为源、`python scripts/md_to_pdf.py --all` 可重生成：
-> 上手用法 [usage.pdf](docs/usage.pdf) ｜ 分层逻辑 [architecture.pdf](docs/architecture.pdf) ｜ skill 触发 [skills-triggers.pdf](docs/skills-triggers.pdf) ｜ 跨工具用法 [portable-agent.pdf](docs/portable-agent.pdf) ｜ **agent 调用说明** [agent-使用说明.pdf](docs/agent-使用说明.pdf) ｜ **前后效果对比** [before-after.pdf](docs/before-after.pdf) ｜ **投研流程提升报告** [投研流程提升报告.pdf](docs/投研流程提升报告.pdf)。
+> 上手用法 [usage.pdf](docs/usage.pdf) ｜ 分层逻辑 [architecture.pdf](docs/architecture.pdf) ｜ skill 触发 [skills-triggers.pdf](docs/skills-triggers.pdf) ｜ 跨工具用法 [portable-agent.pdf](docs/portable-agent.pdf) ｜ **agent 调用说明** [agent-使用说明.pdf](docs/agent-使用说明.pdf) ｜ **网页使用展示**（含截图）[网页使用展示.pdf](docs/网页使用展示.pdf) ｜ **前后效果对比** [before-after.pdf](docs/before-after.pdf) ｜ **投研流程提升报告** [投研流程提升报告.pdf](docs/投研流程提升报告.pdf)。
 > （Markdown 源同名 `.md` 同目录可读。）
 
 ```
