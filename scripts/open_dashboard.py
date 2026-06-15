@@ -19,6 +19,9 @@ import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from fof._compat import ensure_utf8_stdio
+ensure_utf8_stdio()
 
 
 def _serving(host: str, port: int) -> bool:

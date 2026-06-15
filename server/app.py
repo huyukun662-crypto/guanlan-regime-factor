@@ -14,7 +14,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from fof._compat import ensure_utf8_stdio
 from fastapi import FastAPI
+
+ensure_utf8_stdio()
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse

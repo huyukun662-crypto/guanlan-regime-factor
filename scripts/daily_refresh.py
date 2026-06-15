@@ -1,4 +1,4 @@
-"""Daily refresh — re-pull Tushare data + recompute the FOF pipeline for *today*.
+"""Daily refresh — re-pull Tushare data + recompute the dashboard pipeline for *today*.
 
 Run nightly by Windows Task Scheduler (see scripts/setup_schedule.ps1). Reads TUSHARE_TOKEN
 from the gitignored .env (never hard-coded, never logged). The running dashboard server picks
@@ -15,6 +15,9 @@ from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from fof._compat import ensure_utf8_stdio
+ensure_utf8_stdio()
 
 from fof.config import DEFAULT_CONFIG
 from fof import report, sleeves
@@ -33,7 +36,7 @@ def main() -> int:
         print(f"  refresh_tail: {n} codes gained new bars", flush=True)
         cfg = replace(DEFAULT_CONFIG, asof=today)
         dash = report.run_all(cfg, write=True)
-        # FOF 已从 run_all 移除；只剩 regime/master/factors
+        report.write_before_after_md()
         reg = dash["regime"]
         master = dash.get("master", {}) or {}
         factors = dash.get("factors", {}) or {}

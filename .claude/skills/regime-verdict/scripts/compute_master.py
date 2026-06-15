@@ -18,6 +18,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from fof._compat import ensure_utf8_stdio
+ensure_utf8_stdio()
+
 from fof.config import DEFAULT_CONFIG
 from fof import regime, master as mastermod, report
 
