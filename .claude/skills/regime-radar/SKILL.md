@@ -57,6 +57,20 @@ Prints a one-line JSON summary and writes `outputs/regime.json`. The CLI is a th
 advice_baseline, indicators:[{key,name,value,subscore,weight,direction,contribution,
 available,explain,source}]}`. Each `indicators[]` entry renders one GuanLan-style card.
 
+## 输出格式（研报级回复）
+读完 `outputs/regime.json` 后**不要只报一个分数**，按下面结构产一份「风险研判」小节（数字全来自 JSON 字段、标口径）：
+1. **风险结论**：综合风险分 `{composite_score}`/100（`{band}`；档位阈值 `{band_thresholds}`）→ 一句定调 + `{equity_exposure}` 对应的建议仓位。
+2. **顶/底双评分**：`{top_score}` vs `{bottom_score}`，谁占优 → 当前更像「过热顶部」还是「超跌底部」。
+3. **驱动指标（表）**：从 `indicators[]` **点名 3–5 个触发非中性 `tag`** 的，按 |`contribution`| 排序：
+
+   | 指标 | 读数(value) | 顶/底倾向(tag) | 触发规则(rule) | 类别 |
+   |---|---|---|---|---|
+4. **类别打分**：`category_scores` 概览（技术面/宏观/情绪谁在拖累）。
+5. **风险趋势**：`score_trend` 近端方向（升/降）一句话。
+6. **诚实口径**：列出 `available=false` 的缺失指标（已按可用项重归一，不 NaN 污染）；仅供研究参考。
+
+> 质量基线：区分事实/推断/建议；不堆形容词、不写 AI 腔；缺字段就说缺失，不编。
+
 ## Look-ahead safety
 Every indicator uses only trailing data (`series.loc[:asof]`, rolling z-scores). The RSRS slope
 uses a trailing OLS window; the engine never sees future bars. Verified by

@@ -36,6 +36,20 @@ correlation{matrix, labels},
 rotation_ic{signal, dates, ic, rolling_icir, icir, ic_mean, hit_rate},
 rolling_sharpe{dates, series, labels}}`。
 
+## 输出格式（研报级回复）
+读完 `outputs/factors.json` 后产一份「因子研究」小节（数字全来自 JSON 字段、标口径）：
+1. **轮动结论**：近 1 月领涨前三 / 垫底后三（`ranking.factors[].r_1m`）→ 哪个风格在风口、哪类在退潮。
+2. **信号有效性**：`rotation_ic` 的 IC 均值 / ICIR / 胜率 + 统计口径 → 明确「IC≈0.04、胜率仅略高于 50% = 弱信号、非强 alpha」。
+3. **全样本统计（表）**：`tearsheet.factors` 取代表性几只 —
+
+   | 因子 | 年化(ann) | 夏普(sharpe) | 最大回撤(maxdd) | 波动(vol) |
+   |---|---|---|---|---|
+4. **稳定性**：`rolling_sharpe` / `rotation_ic.rolling_icir` 近端方向（在变强还是变弱）。
+5. **分散性**：`correlation.matrix` 点出高相关簇（提示「同涨同跌、分散有限」）。
+6. **诚实口径**：风格指数 long-short 代理、**非个股横截面 IC**；不配权不回测；完整读法见 `references/reading-factor-ic.md`；仅供研究参考。
+
+> 质量基线：区分事实/推断/建议；不堆形容词、不写 AI 腔；缺字段就说缺失，不编。
+
 ## 读法与诚实口径
 **因子轮动月度 IC 的完整读法、当前诚实读数、以及两个口径提醒，见
 `references/reading-factor-ic.md`**（与 `factors.html` 网页使用说明同源）。一句话先记住：当前

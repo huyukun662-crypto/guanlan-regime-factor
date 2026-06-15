@@ -38,6 +38,22 @@ hmm{state_name, posterior, states_order}, er, fundamental, axes,
 transition{labels, matrix, matrix_daily, horizon}, state_stats, segments, history, advice, sources}`。
 `transition.matrix` 是**月度**矩阵（= 日频 `matrix_daily` 的 `T^21`）；`segments` 是样本外状态色带。
 
+## 输出格式（研报级回复）
+读完 `outputs/master.json` 后产一份「大势研判」小节（数字全来自 JSON 字段、标口径）：
+1. **研判结论**：**`{verdict}`**（master_score `{master_score}`/100，置信 `{confidence}%`，gate=`{gate_label}`；`unstable` 为真要标注「信号不稳」）→ 一句姿态含义。
+2. **三轴分解（表）**：`axes` —
+
+   | 轴 | 权重 | 得分(0–100) | 解读 |
+   |---|---|---|---|
+   | HMM 姿态 | 0.50 | `{axes.HMM姿态}` | … |
+   | 效率比 ER | 0.20 | `{axes.效率比}` | ER=`{er.value}`（`{er.tag}`，cap 见 `er_capped`） |
+   | 基本面 | 0.30 | `{axes.基本面}` | … |
+3. **状态结构**：HMM 当前态 `{hmm.state_name}`（已持续 `{streak_days}` 交易日，自 `{streak_since}`）；列 `hmm.posterior` 四态后验%；读 `transition.matrix`（月度）说「自留% + 最可能转向谁%」；附 `state_stats` 当前态历史收益/波动画像。
+4. **情景与触发**：定性给「升级到走强 / 降级到走弱」各需看到什么（HMM 后验迁移、ER 突破方向、基本面变化）；不编具体阈值。
+5. **诚实口径**：样本外色带（非事后平滑）、ER 涨跌停虚高、sticky/cap 规则——完整细节见 `references/reading-the-verdict.md`；仅供研究参考。
+
+> 质量基线：区分事实/推断/建议；不堆形容词、不写 AI 腔；缺字段就说缺失，不编。
+
 ## 读法与诚实口径
 读 verdict、三轴、转移矩阵、state_stats、ER cap / unstable cap、sticky 规则、nowcast vs ffill
 对齐、warmup→NaN 的完整细节见 **`references/reading-the-verdict.md`**（汇报前先读，避免把日频对角
