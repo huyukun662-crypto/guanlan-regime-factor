@@ -36,7 +36,8 @@ def main() -> int:
         print(f"  refresh_tail: {n} codes gained new bars", flush=True)
         cfg = replace(DEFAULT_CONFIG, asof=today)
         dash = report.run_all(cfg, write=True)
-        report.write_before_after_md()
+        # FOF 已移除：run_all 不再产 before_after.json，且 docs/before-after.md 现为「八维前后对比」
+        # 文档（非 FOF 表），故不再调用 write_before_after_md()（否则 FileNotFoundError / 误覆盖）。
         reg = dash["regime"]
         master = dash.get("master", {}) or {}
         factors = dash.get("factors", {}) or {}

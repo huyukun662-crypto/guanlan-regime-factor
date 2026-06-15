@@ -8,9 +8,9 @@
     // 主题切换：默认 Wind 暗色（金融终端观感），用户切换后写 localStorage。
     (function () {
       try {
-        const t = localStorage.getItem("guanlan-theme") || "wind";
+        const t = localStorage.getItem("guanlan-theme") || "light";
         document.documentElement.setAttribute("data-theme", t);
-      } catch (e) { document.documentElement.setAttribute("data-theme", "wind"); }
+      } catch (e) { document.documentElement.setAttribute("data-theme", "light"); }
     })();
   </script>
   <link rel="stylesheet" href="styles.css?v=20260613-wind" />
