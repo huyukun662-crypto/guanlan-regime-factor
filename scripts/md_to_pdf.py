@@ -54,14 +54,26 @@ def _styles() -> dict:
         "cellh": mk(name="ch", fontSize=8.6, leading=12, textColor=colors.white),
         "code": mk(name="code", fontName="Courier", fontSize=8, leading=11.2,
                    textColor=colors.HexColor("#2b3440")),
+        "codecjk": mk(name="codecjk", fontName=CJK, fontSize=8.4, leading=12,
+                      textColor=colors.HexColor("#2b3440")),
     }
+
+
+_CJK_RE = re.compile(r"[　-〿㐀-鿿＀-￯]")
+
+
+def _has_cjk(s: str) -> bool:
+    return bool(_CJK_RE.search(s))
 
 
 def _inline(text: str) -> str:
     """Markdown 行内 → reportlab 标记。先转义 HTML，再还原我们要的标签。"""
     t = html.escape(text)
     t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
-    t = re.sub(r"`([^`]+?)`", r'<font face="Courier">\1</font>', t)
+    # 行内代码：纯 ASCII 用 Courier（等宽）；含中文则用 CJK 字体，否则 Courier 无中文字形→豆腐块。
+    t = re.sub(r"`([^`]+?)`",
+               lambda m: '<font face="%s">%s</font>'
+                         % (CJK if _has_cjk(m.group(1)) else "Courier", m.group(1)), t)
     t = re.sub(r"\[([^\]]+?)\]\(([^)]+?)\)", r'<link href="\2" color="#2f6df6">\1</link>', t)
     t = t.replace("&lt;br/&gt;", "<br/>").replace("&lt;br&gt;", "<br/>")
     return t
@@ -97,7 +109,9 @@ def _flush_code(lines: list, S, story, W):
     if not lines:
         return
     txt = "<br/>".join(html.escape(ln).replace(" ", "&nbsp;") or "&nbsp;" for ln in lines)
-    p = Paragraph(txt, S["code"])
+    # 含中文的代码块改用 CJK 字体（牺牲等宽换取中文字形），否则 Courier 会渲染成豆腐块。
+    style = S["codecjk"] if _has_cjk("".join(lines)) else S["code"]
+    p = Paragraph(txt, style)
     tb = Table([[p]], colWidths=[W])
     tb.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), CODEBG), ("BOX", (0, 0), (-1, -1), 0.5, LINE),
